@@ -36,20 +36,40 @@ steps:
       - "button:has-text('Continue')"
     selector_timeout_ms: 4000
 
-  # Step 2: password page
-  - action: wait_for_selector
-    selector:
-      - "input[type='password']"
-      - "input[autocomplete='current-password']"
-    state: visible
-    selector_timeout_ms: 20000
+  # Wait for username submit to move to the next auth stage.
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery)(?:\\?|$)"
+    timeout_ms: 30000
     continue_on_error: true
 
+  # Retry submit once if still on username screen.
+  - action: click
+    selector:
+      - "#submitUserID"
+      - "button[name='submitUserID']"
+      - "button:has-text('Continue')"
+    only_if_selector:
+      - "#submitUserID"
+      - "input[name='pwd_userid']"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 3000
+    continue_on_error: true
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery)(?:\\?|$)"
+    timeout_ms: 20000
+    continue_on_error: true
+
+  # Step 2: password page (only when password field is present)
   - action: fill
     selector:
       - "input[type='password']"
       - "input[autocomplete='current-password']"
     value: "{{ password }}"
+    only_if_selector:
+      - "input[type='password']"
+      - "input[autocomplete='current-password']"
+    only_if_selector_timeout_ms: 1500
     selector_timeout_ms: 8000
     continue_on_error: true
 
@@ -59,6 +79,10 @@ steps:
       - "button:has-text('Sign in')"
       - "button:has-text('Log in')"
       - "input[type='submit']"
+    only_if_selector:
+      - "input[type='password']"
+      - "input[autocomplete='current-password']"
+    only_if_selector_timeout_ms: 1000
     selector_timeout_ms: 8000
     continue_on_error: true
 
@@ -77,7 +101,9 @@ steps:
   - action: click
     selector:
       - "button:has-text('Continue')"
+      - "button:has-text('Continue'):not([disabled])"
       - "button:has-text('Send code')"
+      - "button:has-text('Send code'):not([disabled])"
       - "button[type='submit']"
     selector_timeout_ms: 3000
     continue_on_error: true
