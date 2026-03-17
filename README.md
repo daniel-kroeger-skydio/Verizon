@@ -86,6 +86,7 @@ Each workflow file has:
 For selector-based actions, `selector` can be a single CSS/text selector string
 or a list of selectors tried in order.
 Set `continue_on_error: true` on a step when it is optional for some account flows.
+Use `only_if_variable_set` / `only_if_variable_empty` for branch-like step control.
 
 ### Supported actions
 
@@ -104,6 +105,7 @@ Set `continue_on_error: true` on a step when it is optional for some account flo
 - `set_variable` (`name`, optional `value`)
 - `prompt_variable` (`name`, optional `prompt`, `secret`, `if_empty_only`, `required`, `default`)
 - `set_variable_from_file` (`name`, `path`, optional `if_empty_only`, `only_if_selector`, `timeout_ms`, `poll_interval_ms`, `delete_after_read`)
+- conditional step gates: `only_if_variable_set`, `only_if_variable_empty`
 - `new_page`
 - `close_page`
 

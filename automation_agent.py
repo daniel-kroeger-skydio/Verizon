@@ -129,6 +129,29 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
             action = step.get("action")
             if not action:
                 raise ValueError(f"Step {i} does not define an action: {raw_step}")
+
+            only_if_variable_set = step.get("only_if_variable_set")
+            if only_if_variable_set is not None:
+                keys = (
+                    [only_if_variable_set]
+                    if isinstance(only_if_variable_set, str)
+                    else list(only_if_variable_set)
+                )
+                if not all(isinstance(k, str) and context.get(k) not in (None, "") for k in keys):
+                    print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_variable_set)")
+                    continue
+
+            only_if_variable_empty = step.get("only_if_variable_empty")
+            if only_if_variable_empty is not None:
+                keys = (
+                    [only_if_variable_empty]
+                    if isinstance(only_if_variable_empty, str)
+                    else list(only_if_variable_empty)
+                )
+                if not all(isinstance(k, str) and context.get(k) in (None, "") for k in keys):
+                    print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_variable_empty)")
+                    continue
+
             print(f"[{i:02d}/{len(steps):02d}] {action}")
             continue_on_error = bool(step.get("continue_on_error", False))
             try:
