@@ -108,23 +108,25 @@ steps:
   # Optional delivery-method step for flows that show "Select a verification method".
   - action: click
     selector:
-      - "text=Text"
-      - "label:has-text('Text')"
+      - "a:has-text('Text')"
+      - ".pwdless_option_text:has-text('Text')"
       - "button:has-text('Text')"
       - "[role='button']:has-text('Text')"
+      - "label:has-text('Text')"
     selector_timeout_ms: 6000
     continue_on_error: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   # Optional trigger to send OTP after method selection.
   - action: click
     selector:
-      - "button:has-text('Continue')"
       - "button:has-text('Continue'):not([disabled])"
-      - "button:has-text('Send code')"
       - "button:has-text('Send code'):not([disabled])"
-      - "button[type='submit']"
+      - "button:has-text('Verify'):not([disabled])"
+      - "button[type='submit']:not([disabled])"
     selector_timeout_ms: 3000
     continue_on_error: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   - action: wait_for_selector
     selector:
@@ -138,6 +140,7 @@ steps:
     state: visible
     selector_timeout_ms: 45000
     continue_on_error: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   # Prompt only when OTP entry field is actually present.
   - action: prompt_variable
@@ -156,6 +159,7 @@ steps:
       - "input[inputmode='numeric']"
       - "input[type='tel']"
     only_if_selector_timeout_ms: 1500
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   # Non-interactive fallback for cloud runs:
   # when OTP input appears, wait for this file to be populated with the current OTP.
@@ -176,6 +180,7 @@ steps:
     timeout_ms: 600000
     poll_interval_ms: 1000
     delete_after_read: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   - action: fill
     selector:
@@ -190,6 +195,7 @@ steps:
     selector_timeout_ms: 8000
     continue_on_error: true
     only_if_variable_set: "otp_code"
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   - action: click
     selector:
@@ -202,6 +208,7 @@ steps:
     selector_timeout_ms: 8000
     continue_on_error: true
     only_if_variable_set: "otp_code"
+    only_if_url_regex: "/account/business/login/otpdelivery"
 
   # Wait and capture post-login state
   - action: wait_for_timeout

@@ -90,6 +90,7 @@ or a list of selectors tried in order.
 Set `continue_on_error: true` on a step when it is optional for some account flows.
 Use `only_if_variable_set` / `only_if_variable_empty` for branch-like step control.
 Use `only_if_selector` / `only_if_not_selector` to run steps only on matching screens.
+Use `only_if_url_regex` / `only_if_not_url_regex` to gate steps by current URL.
 
 ### Supported actions
 
@@ -111,6 +112,7 @@ Use `only_if_selector` / `only_if_not_selector` to run steps only on matching sc
 - `set_variable_from_file` (`name`, `path`, optional `if_empty_only`, `only_if_selector`, `timeout_ms`, `poll_interval_ms`, `delete_after_read`)
 - conditional step gates: `only_if_variable_set`, `only_if_variable_empty`
 - selector-based gates: `only_if_selector`, `only_if_not_selector`
+- URL-based gates: `only_if_url_regex`, `only_if_not_url_regex`
 - `new_page`
 - `close_page`
 

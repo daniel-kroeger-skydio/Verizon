@@ -181,6 +181,30 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                 except Exception:
                     pass
 
+            only_if_url_regex = step.get("only_if_url_regex")
+            if only_if_url_regex is not None:
+                patterns = (
+                    [only_if_url_regex]
+                    if isinstance(only_if_url_regex, str)
+                    else list(only_if_url_regex)
+                )
+                current_url = page.url
+                if not any(re.search(str(pattern), current_url) for pattern in patterns):
+                    print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_url_regex)")
+                    continue
+
+            only_if_not_url_regex = step.get("only_if_not_url_regex")
+            if only_if_not_url_regex is not None:
+                patterns = (
+                    [only_if_not_url_regex]
+                    if isinstance(only_if_not_url_regex, str)
+                    else list(only_if_not_url_regex)
+                )
+                current_url = page.url
+                if any(re.search(str(pattern), current_url) for pattern in patterns):
+                    print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_not_url_regex)")
+                    continue
+
             print(f"[{i:02d}/{len(steps):02d}] {action}")
             continue_on_error = bool(step.get("continue_on_error", False))
             try:
