@@ -62,15 +62,6 @@ steps:
     selector_timeout_ms: 8000
     continue_on_error: true
 
-  # Prompt for OTP when not provided via env var.
-  - action: prompt_variable
-    name: "otp_code"
-    prompt: "Enter current Verizon OTP code: "
-    secret: true
-    if_empty_only: true
-    required: false
-    continue_on_error: true
-
   # Step 3: OTP challenge (if prompted)
   # Optional delivery-method step for flows that show "Select a verification method".
   - action: click
@@ -103,6 +94,24 @@ steps:
     state: visible
     selector_timeout_ms: 45000
     continue_on_error: true
+
+  # Prompt only when OTP entry field is actually present.
+  - action: prompt_variable
+    name: "otp_code"
+    prompt: "Enter current Verizon OTP code: "
+    secret: true
+    if_empty_only: true
+    required: false
+    continue_on_error: true
+    only_if_selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    only_if_selector_timeout_ms: 1500
 
   # Non-interactive fallback for cloud runs:
   # when OTP input appears, wait for this file to be populated with the current OTP.

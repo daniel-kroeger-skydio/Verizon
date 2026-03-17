@@ -61,6 +61,7 @@ current OTP code (so rotating OTPs are handled each run).
 In non-interactive cloud runs (no TTY), it can also wait for a runtime OTP file.
 After authentication, the same workflow navigates to Verizon BYOD and validates
 that "Bring Your Own Device" is visible.
+OTP prompt timing is now gated to appear only when the OTP entry field is visible.
 
 ### Get exact selectors from your network/browser
 
@@ -87,6 +88,7 @@ For selector-based actions, `selector` can be a single CSS/text selector string
 or a list of selectors tried in order.
 Set `continue_on_error: true` on a step when it is optional for some account flows.
 Use `only_if_variable_set` / `only_if_variable_empty` for branch-like step control.
+Use `only_if_selector` / `only_if_not_selector` to run steps only on matching screens.
 
 ### Supported actions
 
@@ -106,6 +108,7 @@ Use `only_if_variable_set` / `only_if_variable_empty` for branch-like step contr
 - `prompt_variable` (`name`, optional `prompt`, `secret`, `if_empty_only`, `required`, `default`)
 - `set_variable_from_file` (`name`, `path`, optional `if_empty_only`, `only_if_selector`, `timeout_ms`, `poll_interval_ms`, `delete_after_read`)
 - conditional step gates: `only_if_variable_set`, `only_if_variable_empty`
+- selector-based gates: `only_if_selector`, `only_if_not_selector`
 - `new_page`
 - `close_page`
 

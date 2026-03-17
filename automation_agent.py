@@ -152,6 +152,35 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                     print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_variable_empty)")
                     continue
 
+            only_if_selector = step.get("only_if_selector")
+            if only_if_selector is not None:
+                try:
+                    resolve_selector(
+                        page,
+                        only_if_selector,
+                        action=action,
+                        selector_timeout_ms=int(step.get("only_if_selector_timeout_ms", 1500)),
+                        wait_state=str(step.get("only_if_selector_state", "attached")),
+                    )
+                except Exception:
+                    print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_selector)")
+                    continue
+
+            only_if_not_selector = step.get("only_if_not_selector")
+            if only_if_not_selector is not None:
+                try:
+                    resolve_selector(
+                        page,
+                        only_if_not_selector,
+                        action=action,
+                        selector_timeout_ms=int(step.get("only_if_not_selector_timeout_ms", 1500)),
+                        wait_state=str(step.get("only_if_not_selector_state", "attached")),
+                    )
+                    print(f"[{i:02d}/{len(steps):02d}] {action} (skipped: only_if_not_selector)")
+                    continue
+                except Exception:
+                    pass
+
             print(f"[{i:02d}/{len(steps):02d}] {action}")
             continue_on_error = bool(step.get("continue_on_error", False))
             try:
