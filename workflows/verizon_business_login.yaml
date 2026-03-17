@@ -42,6 +42,7 @@ steps:
       - "input[autocomplete='current-password']"
     state: visible
     selector_timeout_ms: 20000
+    continue_on_error: true
 
   - action: fill
     selector:
@@ -49,6 +50,7 @@ steps:
       - "input[autocomplete='current-password']"
     value: "{{ password }}"
     selector_timeout_ms: 8000
+    continue_on_error: true
 
   - action: click
     selector:
@@ -57,6 +59,7 @@ steps:
       - "button:has-text('Log in')"
       - "input[type='submit']"
     selector_timeout_ms: 8000
+    continue_on_error: true
 
   # Step 3: OTP challenge (if prompted)
   # Optional delivery-method step for flows that show "Select a verification method".
