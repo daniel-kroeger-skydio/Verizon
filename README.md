@@ -155,6 +155,9 @@ The only per-run BYOD variable is **SIM ICCID**:
 Before clicking **Confirm devices**, the workflow now waits for the button to
 be enabled. If it does not enable, BYOD input validation likely failed (most
 commonly an invalid/format-mismatched ICCID).
+The ICCID input is normalized to digits-only and validated to 20 digits before
+submission. A pre-submit screenshot is saved to
+`artifacts/screenshots/byod_before_confirm.png`.
 
 ## Example snippet
 

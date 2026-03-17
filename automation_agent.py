@@ -342,6 +342,32 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                     key = require(step, "name")
                     value = step.get("value", "")
                     context[str(key)] = value
+                elif action == "normalize_variable":
+                    key = str(require(step, "name"))
+                    value = context.get(key, "")
+                    if value is None:
+                        value = ""
+                    value = str(value)
+                    mode = str(step.get("mode", "strip"))
+
+                    if mode == "strip":
+                        normalized = value.strip()
+                    elif mode == "digits_only":
+                        normalized = re.sub(r"[^0-9]", "", value)
+                    else:
+                        raise ValueError(f"Unsupported normalize mode '{mode}'")
+
+                    min_length = step.get("min_length")
+                    max_length = step.get("max_length")
+                    if min_length is not None and len(normalized) < int(min_length):
+                        raise ValueError(
+                            f"Variable '{key}' has length {len(normalized)}; expected >= {int(min_length)}"
+                        )
+                    if max_length is not None and len(normalized) > int(max_length):
+                        raise ValueError(
+                            f"Variable '{key}' has length {len(normalized)}; expected <= {int(max_length)}"
+                        )
+                    context[key] = normalized
                 elif action == "prompt_variable":
                     key = str(require(step, "name"))
                     if_empty_only = bool(step.get("if_empty_only", True))

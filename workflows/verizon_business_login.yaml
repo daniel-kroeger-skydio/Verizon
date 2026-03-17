@@ -270,6 +270,12 @@ steps:
     required: true
     only_if_url_regex: "/nso-landing/devicevalidation/mobile-evolution"
 
+  - action: normalize_variable
+    name: "byod_sim_iccid"
+    mode: "digits_only"
+    min_length: 20
+    max_length: 20
+
   - action: fill
     selector:
       - "xpath=//label[normalize-space()='SIM number']/following::input[1]"
@@ -287,6 +293,21 @@ steps:
 
   - action: wait_for_timeout
     ms: 1500
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_before_confirm.png"
+    full_page: true
+
+  # Helpful diagnostics if button doesn't enable.
+  - action: extract_text
+    selector:
+      - "text=Please enter valid SIM number."
+      - "text=SIM number is required."
+      - "text=Please enter valid Device ID."
+      - "text=Device Id is required."
+    save_as: "byod_validation_hint"
+    selector_timeout_ms: 1500
+    continue_on_error: true
 
   - action: select
     selector:
