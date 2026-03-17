@@ -172,6 +172,10 @@ steps:
     url: "{{ byod_url }}"
     wait_until: "domcontentloaded"
 
+  - action: wait_for_url
+    regex: "^https://mb\\.verizonwireless\\.com/mbt/secure/index(?:\\?|#|$)"
+    timeout_ms: 90000
+
   - action: wait_for_selector
     selector:
       - "text=Bring Your Own Device"
@@ -179,6 +183,7 @@ steps:
       - "h2:has-text('Bring Your Own Device')"
     state: visible
     selector_timeout_ms: 60000
+    continue_on_error: true
 
   - action: screenshot
     path: "artifacts/screenshots/byod_landing.png"

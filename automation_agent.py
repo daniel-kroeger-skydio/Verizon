@@ -269,6 +269,17 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         wait_state=state,
                     )
                     page.wait_for_selector(selector, state=state)
+                elif action == "wait_for_url":
+                    wait_timeout_ms = int(step.get("timeout_ms", timeout_ms))
+                    if "regex" in step:
+                        pattern = re.compile(str(require(step, "regex")))
+                        page.wait_for_url(pattern, timeout=wait_timeout_ms)
+                    elif "contains" in step:
+                        contains = str(require(step, "contains"))
+                        pattern = re.compile(f".*{re.escape(contains)}.*")
+                        page.wait_for_url(pattern, timeout=wait_timeout_ms)
+                    else:
+                        page.wait_for_url(str(require(step, "url")), timeout=wait_timeout_ms)
                 elif action == "wait_for_timeout":
                     ms = int(require(step, "ms"))
                     page.wait_for_timeout(ms)

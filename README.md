@@ -100,6 +100,7 @@ Use `only_if_selector` / `only_if_not_selector` to run steps only on matching sc
 - `select` (`selector`, and `value` or `values`)
 - `check` / `uncheck` (`selector`)
 - `wait_for_selector` (`selector`, optional `state`)
+- `wait_for_url` (`url` or `contains` or `regex`, optional `timeout_ms`)
 - `wait_for_timeout` (`ms`)
 - `screenshot` (optional `path`, `full_page`)
 - `extract_text` (`selector`, `save_as`)
