@@ -15,6 +15,8 @@ variables:
   password: "${VZW_BUSINESS_PASSWORD}"
   otp_code: "${VZW_BUSINESS_OTP}"
   byod_url: "https://mb.verizonwireless.com/mbt/secure/index?appName=comm&transType=NSO&navtrk=globalnav:shop:bringyourowndevice#/nso-landing/devicevalidation/mobile-evolution"
+  byod_device_imei: "358339770214328"
+  byod_sim_iccid: "${BYOD_SIM_ICCID}"
 
 steps:
   - action: goto
@@ -234,6 +236,61 @@ steps:
       - "text=Bring Your Own Device"
     state: attached
     selector_timeout_ms: 90000
+
+  # Step 5: fill BYOD form fields
+  - action: click
+    selector:
+      - "div.radio-box-item:has-text('I want a new phone number')"
+      - "text=I want a new phone number"
+    selector_timeout_ms: 8000
+
+  - action: fill
+    selector:
+      - "xpath=//label[normalize-space()='Device ID (IMEI)']/following::input[1]"
+      - "input.Form-input.width"
+    value: "{{ byod_device_imei }}"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: select
+    selector:
+      - "xpath=//label[normalize-space()='SIM']/following::select[1]"
+      - "select[aria-label='Select-Option']"
+    value: "haveOwnPSim"
+    selector_timeout_ms: 12000
+
+  # BYOD_SIM_ICCID is the only per-run variable. Prompt when not pre-set in env.
+  - action: prompt_variable
+    name: "byod_sim_iccid"
+    prompt: "Enter BYOD SIM ICCID (20 digits): "
+    secret: false
+    if_empty_only: true
+    required: true
+    only_if_url_regex: "/nso-landing/devicevalidation/mobile-evolution"
+
+  - action: fill
+    selector:
+      - "xpath=//label[normalize-space()='SIM number']/following::input[1]"
+      - "input[aria-label='Quantity']"
+    value: "{{ byod_sim_iccid }}"
+    selector_timeout_ms: 12000
+
+  - action: select
+    selector:
+      - "select[name='contract0']"
+      - "xpath=//label[normalize-space()='Contract term']/following::select[1]"
+    value: "0"
+    selector_timeout_ms: 12000
+
+  - action: click
+    selector:
+      - "button:has-text('Confirm devices')"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_timeout
+    ms: 5000
 
   - action: screenshot
     path: "artifacts/screenshots/byod_landing.png"

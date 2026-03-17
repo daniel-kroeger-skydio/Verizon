@@ -63,6 +63,7 @@ After authentication, the same workflow navigates to Verizon BYOD and validates
 the BYOD route and core device-entry content are loaded.
 OTP prompt timing is now gated to appear only when the OTP entry field is visible.
 If Verizon routes to `/login/options`, the workflow selects the Password branch automatically.
+The workflow now also fills BYOD fields and clicks **Confirm devices**.
 
 ### Get exact selectors from your network/browser
 
@@ -136,6 +137,20 @@ printf '%s' '123456' > .runtime/verizon_otp.txt
 ```
 
 The agent reads it and (by default) deletes the file.
+
+### BYOD form inputs
+
+The Verizon workflow is currently configured to submit:
+
+- number mode: **I want a new phone number**
+- device IMEI: `358339770214328`
+- SIM mode: **I have a physical SIM (pSIM) to activate**
+- contract term: **Month to Month**
+
+The only per-run BYOD variable is **SIM ICCID**:
+
+- set `BYOD_SIM_ICCID` in env, or
+- leave it unset and the workflow prompts: `Enter BYOD SIM ICCID (20 digits):`
 
 ## Example snippet
 
