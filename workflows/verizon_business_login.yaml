@@ -10,8 +10,10 @@ variables:
   # Set these in your shell before running:
   # export VZW_BUSINESS_USERNAME="..."
   # export VZW_BUSINESS_PASSWORD="..."
+  # export VZW_BUSINESS_OTP="123456"
   username: "${VZW_BUSINESS_USERNAME}"
   password: "${VZW_BUSINESS_PASSWORD}"
+  otp_code: "${VZW_BUSINESS_OTP}"
 
 steps:
   - action: goto
@@ -55,6 +57,63 @@ steps:
       - "button:has-text('Log in')"
       - "input[type='submit']"
     selector_timeout_ms: 8000
+
+  # Step 3: OTP challenge (if prompted)
+  # Optional delivery-method step for flows that show "Select a verification method".
+  - action: click
+    selector:
+      - "text=Text"
+      - "label:has-text('Text')"
+      - "button:has-text('Text')"
+      - "[role='button']:has-text('Text')"
+    selector_timeout_ms: 6000
+    continue_on_error: true
+
+  # Optional trigger to send OTP after method selection.
+  - action: click
+    selector:
+      - "button:has-text('Continue')"
+      - "button:has-text('Send code')"
+      - "button[type='submit']"
+    selector_timeout_ms: 6000
+    continue_on_error: true
+
+  - action: wait_for_selector
+    selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    state: visible
+    selector_timeout_ms: 45000
+    continue_on_error: true
+
+  - action: fill
+    selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    value: "{{ otp_code }}"
+    selector_timeout_ms: 8000
+    continue_on_error: true
+
+  - action: click
+    selector:
+      - "button:has-text('Verify')"
+      - "button:has-text('Continue')"
+      - "button:has-text('Submit')"
+      - "button:has-text('Log in')"
+      - "button[type='submit']"
+      - "input[type='submit']"
+    selector_timeout_ms: 8000
+    continue_on_error: true
 
   # Wait and capture post-login state
   - action: wait_for_timeout

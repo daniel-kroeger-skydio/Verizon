@@ -128,139 +128,145 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
             if not action:
                 raise ValueError(f"Step {i} does not define an action: {raw_step}")
             print(f"[{i:02d}/{len(steps):02d}] {action}")
-
-            if action == "goto":
-                url = require(step, "url")
-                wait_until = step.get("wait_until", "domcontentloaded")
-                page.goto(url, wait_until=wait_until)
-            elif action == "fill":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                value = str(require(step, "value"))
-                if step.get("clear", True):
-                    page.fill(selector, value)
+            continue_on_error = bool(step.get("continue_on_error", False))
+            try:
+                if action == "goto":
+                    url = require(step, "url")
+                    wait_until = step.get("wait_until", "domcontentloaded")
+                    page.goto(url, wait_until=wait_until)
+                elif action == "fill":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    value = str(require(step, "value"))
+                    if step.get("clear", True):
+                        page.fill(selector, value)
+                    else:
+                        page.locator(selector).type(value)
+                elif action == "click":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    page.click(
+                        selector,
+                        button=step.get("button", "left"),
+                        click_count=int(step.get("click_count", 1)),
+                        delay=float(step.get("delay_ms", 0)),
+                    )
+                elif action == "type":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    text = str(require(step, "text"))
+                    page.locator(selector).type(text, delay=float(step.get("delay_ms", 0)))
+                elif action == "press":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    key = str(require(step, "key"))
+                    page.press(selector, key)
+                elif action == "select":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    if "values" in step:
+                        values = step["values"]
+                    else:
+                        values = require(step, "value")
+                    page.select_option(selector, values)
+                elif action == "check":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    page.check(selector)
+                elif action == "uncheck":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    page.uncheck(selector)
+                elif action == "wait_for_selector":
+                    state = step.get("state", "visible")
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", timeout_ms)),
+                        wait_state=state,
+                    )
+                    page.wait_for_selector(selector, state=state)
+                elif action == "wait_for_timeout":
+                    ms = int(require(step, "ms"))
+                    page.wait_for_timeout(ms)
+                elif action == "screenshot":
+                    path_value = step.get("path")
+                    if path_value:
+                        screenshot_path = Path(path_value)
+                    else:
+                        screenshot_path = screenshot_dir / f"step_{i:02d}.png"
+                    screenshot_path.parent.mkdir(parents=True, exist_ok=True)
+                    page.screenshot(path=str(screenshot_path), full_page=bool(step.get("full_page", False)))
+                elif action == "extract_text":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    save_as = require(step, "save_as")
+                    text = page.locator(selector).inner_text()
+                    context[save_as] = text
+                    print(f"    saved text into '{{{{ {save_as} }}}}'")
+                elif action == "extract_attr":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    attr = require(step, "attr")
+                    save_as = require(step, "save_as")
+                    value = page.locator(selector).get_attribute(attr)
+                    context[save_as] = "" if value is None else value
+                    print(f"    saved attr into '{{{{ {save_as} }}}}'")
+                elif action == "set_variable":
+                    key = require(step, "name")
+                    value = step.get("value", "")
+                    context[str(key)] = value
+                elif action == "new_page":
+                    page = browser_context.new_page()
+                    page.set_default_timeout(timeout_ms)
+                elif action == "close_page":
+                    page.close()
+                    page = browser_context.new_page()
+                    page.set_default_timeout(timeout_ms)
                 else:
-                    page.locator(selector).type(value)
-            elif action == "click":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                page.click(
-                    selector,
-                    button=step.get("button", "left"),
-                    click_count=int(step.get("click_count", 1)),
-                    delay=float(step.get("delay_ms", 0)),
-                )
-            elif action == "type":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                text = str(require(step, "text"))
-                page.locator(selector).type(text, delay=float(step.get("delay_ms", 0)))
-            elif action == "press":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                key = str(require(step, "key"))
-                page.press(selector, key)
-            elif action == "select":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                if "values" in step:
-                    values = step["values"]
-                else:
-                    values = require(step, "value")
-                page.select_option(selector, values)
-            elif action == "check":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                page.check(selector)
-            elif action == "uncheck":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                page.uncheck(selector)
-            elif action == "wait_for_selector":
-                state = step.get("state", "visible")
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", timeout_ms)),
-                    wait_state=state,
-                )
-                page.wait_for_selector(selector, state=state)
-            elif action == "wait_for_timeout":
-                ms = int(require(step, "ms"))
-                page.wait_for_timeout(ms)
-            elif action == "screenshot":
-                path_value = step.get("path")
-                if path_value:
-                    screenshot_path = Path(path_value)
-                else:
-                    screenshot_path = screenshot_dir / f"step_{i:02d}.png"
-                screenshot_path.parent.mkdir(parents=True, exist_ok=True)
-                page.screenshot(path=str(screenshot_path), full_page=bool(step.get("full_page", False)))
-            elif action == "extract_text":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                save_as = require(step, "save_as")
-                text = page.locator(selector).inner_text()
-                context[save_as] = text
-                print(f"    saved text into '{{{{ {save_as} }}}}'")
-            elif action == "extract_attr":
-                selector = resolve_selector(
-                    page,
-                    require(step, "selector"),
-                    action=action,
-                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                )
-                attr = require(step, "attr")
-                save_as = require(step, "save_as")
-                value = page.locator(selector).get_attribute(attr)
-                context[save_as] = "" if value is None else value
-                print(f"    saved attr into '{{{{ {save_as} }}}}'")
-            elif action == "set_variable":
-                key = require(step, "name")
-                value = step.get("value", "")
-                context[str(key)] = value
-            elif action == "new_page":
-                page = browser_context.new_page()
-                page.set_default_timeout(timeout_ms)
-            elif action == "close_page":
-                page.close()
-                page = browser_context.new_page()
-                page.set_default_timeout(timeout_ms)
-            else:
-                raise ValueError(f"Unsupported action '{action}' in step {i}: {step}")
+                    raise ValueError(f"Unsupported action '{action}' in step {i}: {step}")
+            except Exception as exc:
+                if continue_on_error:
+                    print(f"    warning: step failed but continuing (continue_on_error=true): {exc}")
+                    continue
+                raise
 
         browser_context.close()
         browser.close()

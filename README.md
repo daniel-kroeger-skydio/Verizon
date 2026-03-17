@@ -48,11 +48,14 @@ The repository includes a Verizon-specific starter flow:
 ```bash
 export VZW_BUSINESS_USERNAME="your_username"
 export VZW_BUSINESS_PASSWORD="your_password"
+export VZW_BUSINESS_OTP="123456"
 python automation_agent.py workflows/verizon_business_login.yaml --headed
 ```
 
 Because some enterprise login pages vary by session/account, selector fields can
 be either a single string or a list of selector fallbacks.
+The Verizon workflow also includes OTP selection/code-entry steps using
+`VZW_BUSINESS_OTP` with optional fallbacks.
 
 ### Get exact selectors from your network/browser
 
@@ -77,6 +80,7 @@ Each workflow file has:
 
 For selector-based actions, `selector` can be a single CSS/text selector string
 or a list of selectors tried in order.
+Set `continue_on_error: true` on a step when it is optional for some account flows.
 
 ### Supported actions
 
