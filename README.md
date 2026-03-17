@@ -152,6 +152,10 @@ The only per-run BYOD variable is **SIM ICCID**:
 - set `BYOD_SIM_ICCID` in env, or
 - leave it unset and the workflow prompts: `Enter BYOD SIM ICCID (20 digits):`
 
+Before clicking **Confirm devices**, the workflow now waits for the button to
+be enabled. If it does not enable, BYOD input validation likely failed (most
+commonly an invalid/format-mismatched ICCID).
+
 ## Example snippet
 
 ```yaml

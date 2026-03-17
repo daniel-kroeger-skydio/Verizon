@@ -277,6 +277,17 @@ steps:
     value: "{{ byod_sim_iccid }}"
     selector_timeout_ms: 12000
 
+  # Trigger validation by blurring SIM number field.
+  - action: press
+    selector:
+      - "xpath=//label[normalize-space()='SIM number']/following::input[1]"
+      - "input[aria-label='Quantity']"
+    key: "Tab"
+    selector_timeout_ms: 8000
+
+  - action: wait_for_timeout
+    ms: 1500
+
   - action: select
     selector:
       - "select[name='contract0']"
@@ -284,9 +295,15 @@ steps:
     value: "0"
     selector_timeout_ms: 12000
 
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Confirm devices'):not([disabled])"
+    state: visible
+    selector_timeout_ms: 60000
+
   - action: click
     selector:
-      - "button:has-text('Confirm devices')"
+      - "button:has-text('Confirm devices'):not([disabled])"
     selector_timeout_ms: 12000
 
   - action: wait_for_timeout
