@@ -59,6 +59,8 @@ The Verizon workflow also includes OTP selection/code-entry steps using
 If `VZW_BUSINESS_OTP` is not set, the workflow prompts you at runtime for the
 current OTP code (so rotating OTPs are handled each run).
 In non-interactive cloud runs (no TTY), it can also wait for a runtime OTP file.
+After authentication, the same workflow navigates to Verizon BYOD and validates
+that "Bring Your Own Device" is visible.
 
 ### Get exact selectors from your network/browser
 

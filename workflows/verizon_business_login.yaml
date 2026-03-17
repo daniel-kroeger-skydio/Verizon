@@ -14,6 +14,7 @@ variables:
   username: "${VZW_BUSINESS_USERNAME}"
   password: "${VZW_BUSINESS_PASSWORD}"
   otp_code: "${VZW_BUSINESS_OTP}"
+  byod_url: "https://mb.verizonwireless.com/mbt/secure/index?appName=comm&transType=NSO&navtrk=globalnav:shop:bringyourowndevice#/nso-landing/devicevalidation/mobile-evolution"
 
 steps:
   - action: goto
@@ -153,4 +154,21 @@ steps:
 
   - action: screenshot
     path: "artifacts/screenshots/verizon_after_login.png"
+    full_page: true
+
+  # Step 4: navigate to BYOD and verify page load
+  - action: goto
+    url: "{{ byod_url }}"
+    wait_until: "domcontentloaded"
+
+  - action: wait_for_selector
+    selector:
+      - "text=Bring Your Own Device"
+      - "h1:has-text('Bring Your Own Device')"
+      - "h2:has-text('Bring Your Own Device')"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_landing.png"
     full_page: true
