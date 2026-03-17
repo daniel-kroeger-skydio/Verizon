@@ -6,6 +6,7 @@ Config-driven browser automation agent powered by Playwright.
 from __future__ import annotations
 
 import argparse
+import getpass
 import os
 import re
 import sys
@@ -253,6 +254,34 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                     key = require(step, "name")
                     value = step.get("value", "")
                     context[str(key)] = value
+                elif action == "prompt_variable":
+                    key = str(require(step, "name"))
+                    if_empty_only = bool(step.get("if_empty_only", True))
+                    required = bool(step.get("required", True))
+                    secret = bool(step.get("secret", False))
+                    default_value = step.get("default", "")
+
+                    current = context.get(key)
+                    if if_empty_only and current not in (None, ""):
+                        continue
+
+                    if not sys.stdin.isatty():
+                        raise ValueError(
+                            f"Step {i} requires interactive input for '{key}', but stdin is not a TTY. "
+                            f"Set it in workflow variables or environment before running."
+                        )
+
+                    prompt_text = str(step.get("prompt", f"Enter value for {key}: "))
+                    entered = (
+                        getpass.getpass(prompt_text)
+                        if secret
+                        else input(prompt_text)
+                    )
+                    if entered == "":
+                        entered = str(default_value)
+                    if required and entered == "":
+                        raise ValueError(f"Input required for variable '{key}'.")
+                    context[key] = entered
                 elif action == "new_page":
                     page = browser_context.new_page()
                     page.set_default_timeout(timeout_ms)

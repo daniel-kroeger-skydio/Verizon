@@ -56,6 +56,8 @@ Because some enterprise login pages vary by session/account, selector fields can
 be either a single string or a list of selector fallbacks.
 The Verizon workflow also includes OTP selection/code-entry steps using
 `VZW_BUSINESS_OTP` with optional fallbacks.
+If `VZW_BUSINESS_OTP` is not set, the workflow prompts you at runtime for the
+current OTP code (so rotating OTPs are handled each run).
 
 ### Get exact selectors from your network/browser
 
@@ -97,6 +99,7 @@ Set `continue_on_error: true` on a step when it is optional for some account flo
 - `extract_text` (`selector`, `save_as`)
 - `extract_attr` (`selector`, `attr`, `save_as`)
 - `set_variable` (`name`, optional `value`)
+- `prompt_variable` (`name`, optional `prompt`, `secret`, `if_empty_only`, `required`, `default`)
 - `new_page`
 - `close_page`
 

@@ -61,6 +61,14 @@ steps:
     selector_timeout_ms: 8000
     continue_on_error: true
 
+  # Prompt for OTP when not provided via env var.
+  - action: prompt_variable
+    name: "otp_code"
+    prompt: "Enter current Verizon OTP code: "
+    secret: true
+    if_empty_only: true
+    required: false
+
   # Step 3: OTP challenge (if prompted)
   # Optional delivery-method step for flows that show "Select a verification method".
   - action: click
