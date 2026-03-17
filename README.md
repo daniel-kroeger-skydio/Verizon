@@ -58,6 +58,7 @@ The Verizon workflow also includes OTP selection/code-entry steps using
 `VZW_BUSINESS_OTP` with optional fallbacks.
 If `VZW_BUSINESS_OTP` is not set, the workflow prompts you at runtime for the
 current OTP code (so rotating OTPs are handled each run).
+In non-interactive cloud runs (no TTY), it can also wait for a runtime OTP file.
 
 ### Get exact selectors from your network/browser
 
@@ -100,8 +101,30 @@ Set `continue_on_error: true` on a step when it is optional for some account flo
 - `extract_attr` (`selector`, `attr`, `save_as`)
 - `set_variable` (`name`, optional `value`)
 - `prompt_variable` (`name`, optional `prompt`, `secret`, `if_empty_only`, `required`, `default`)
+- `set_variable_from_file` (`name`, `path`, optional `if_empty_only`, `only_if_selector`, `timeout_ms`, `poll_interval_ms`, `delete_after_read`)
 - `new_page`
 - `close_page`
+
+### Handling rotating OTP in non-interactive runs
+
+When the OTP screen is reached and no `VZW_BUSINESS_OTP` is set, the Verizon
+workflow waits for `.runtime/verizon_otp.txt`.
+
+Run the workflow:
+
+```bash
+unset VZW_BUSINESS_OTP
+xvfb-run -a python3 automation_agent.py workflows/verizon_business_login.yaml --headed
+```
+
+When Verizon sends your OTP, write it to the file from another shell:
+
+```bash
+mkdir -p .runtime
+printf '%s' '123456' > .runtime/verizon_otp.txt
+```
+
+The agent reads it and (by default) deletes the file.
 
 ## Example snippet
 

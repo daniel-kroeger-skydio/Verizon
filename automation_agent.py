@@ -10,6 +10,7 @@ import getpass
 import os
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -282,6 +283,55 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                     if required and entered == "":
                         raise ValueError(f"Input required for variable '{key}'.")
                     context[key] = entered
+                elif action == "set_variable_from_file":
+                    key = str(require(step, "name"))
+                    if_empty_only = bool(step.get("if_empty_only", True))
+                    if if_empty_only and context.get(key) not in (None, ""):
+                        continue
+
+                    only_if_selector = step.get("only_if_selector")
+                    if only_if_selector is not None:
+                        try:
+                            resolve_selector(
+                                page,
+                                only_if_selector,
+                                action=action,
+                                selector_timeout_ms=int(step.get("only_if_selector_timeout_ms", 1500)),
+                            )
+                        except Exception:
+                            print(f"    skipped: selector for '{key}' not present")
+                            continue
+
+                    file_path = Path(str(require(step, "path")))
+                    timeout_for_file_ms = int(step.get("timeout_ms", 300000))
+                    poll_interval_ms = int(step.get("poll_interval_ms", 1000))
+                    trim = bool(step.get("trim", True))
+                    delete_after_read = bool(step.get("delete_after_read", False))
+
+                    started = time.monotonic()
+                    loaded_value = ""
+                    while True:
+                        if file_path.exists():
+                            loaded_value = file_path.read_text(encoding="utf-8")
+                            if trim:
+                                loaded_value = loaded_value.strip()
+                            if loaded_value != "":
+                                break
+
+                        elapsed_ms = int((time.monotonic() - started) * 1000)
+                        if elapsed_ms >= timeout_for_file_ms:
+                            raise ValueError(
+                                f"Timed out waiting for value in '{file_path}' for variable '{key}'."
+                            )
+                        time.sleep(max(poll_interval_ms, 100) / 1000)
+
+                    context[key] = loaded_value
+                    if delete_after_read:
+                        try:
+                            file_path.unlink()
+                        except OSError:
+                            pass
+                    print(f"    loaded variable '{key}' from file")
                 elif action == "new_page":
                     page = browser_context.new_page()
                     page.set_default_timeout(timeout_ms)

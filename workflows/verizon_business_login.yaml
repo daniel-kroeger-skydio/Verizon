@@ -68,6 +68,27 @@ steps:
     secret: true
     if_empty_only: true
     required: false
+    continue_on_error: true
+
+  # Non-interactive fallback for cloud runs:
+  # when OTP input appears, wait for this file to be populated with the current OTP.
+  # Example: mkdir -p .runtime && printf '%s' '123456' > .runtime/verizon_otp.txt
+  - action: set_variable_from_file
+    name: "otp_code"
+    path: ".runtime/verizon_otp.txt"
+    if_empty_only: true
+    only_if_selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    only_if_selector_timeout_ms: 2500
+    timeout_ms: 600000
+    poll_interval_ms: 1000
+    delete_after_read: true
 
   # Step 3: OTP challenge (if prompted)
   # Optional delivery-method step for flows that show "Select a verification method".
