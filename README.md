@@ -41,6 +41,32 @@ If you want to see the browser:
 python automation_agent.py workflows/example_workflow.yaml --headed
 ```
 
+## Verizon business login workflow
+
+The repository includes a Verizon-specific starter flow:
+
+```bash
+export VZW_BUSINESS_USERNAME="your_username"
+export VZW_BUSINESS_PASSWORD="your_password"
+python automation_agent.py workflows/verizon_business_login.yaml --headed
+```
+
+Because some enterprise login pages vary by session/account, selector fields can
+be either a single string or a list of selector fallbacks.
+
+### Get exact selectors from your network/browser
+
+If a page uses anti-bot controls, run this helper from your own machine/network:
+
+```bash
+python discover_selectors.py \
+  --url "https://mblogin.verizonwireless.com/account/business/login/unifiedlogin" \
+  --headed \
+  --wait-seconds 15
+```
+
+Then copy the most specific selectors (`#id`, `name`, `data-testid`) into your workflow.
+
 ## Workflow format
 
 Each workflow file has:
@@ -48,6 +74,9 @@ Each workflow file has:
 - `settings`: runtime options (`headless`, `timeout_ms`, `slow_mo_ms`, `screenshot_dir`)
 - `variables`: reusable values (`{{ variable_name }}`)
 - `steps`: ordered browser actions
+
+For selector-based actions, `selector` can be a single CSS/text selector string
+or a list of selectors tried in order.
 
 ### Supported actions
 
@@ -77,10 +106,14 @@ steps:
   - action: goto
     url: "https://example.com/login"
   - action: fill
-    selector: "input[name='username']"
+    selector:
+      - "input#username"
+      - "input[name='username']"
     value: "{{ username }}"
   - action: click
-    selector: "button[type='submit']"
+    selector:
+      - "button[type='submit']"
+      - "button:has-text('Sign in')"
 ```
 
 ## Notes for production workflows

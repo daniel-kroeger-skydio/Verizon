@@ -1,0 +1,58 @@
+name: "verizon-business-login"
+
+settings:
+  headless: false
+  timeout_ms: 30000
+  slow_mo_ms: 75
+  screenshot_dir: "artifacts/screenshots"
+
+variables:
+  # Set these in your shell before running:
+  # export VZW_BUSINESS_USERNAME="..."
+  # export VZW_BUSINESS_PASSWORD="..."
+  username: "${VZW_BUSINESS_USERNAME}"
+  password: "${VZW_BUSINESS_PASSWORD}"
+
+steps:
+  - action: goto
+    url: "https://mblogin.verizonwireless.com/account/business/login/unifiedlogin"
+
+  # Username / email field (fallback selector list)
+  - action: fill
+    selector:
+      - "input#IDToken1"
+      - "input[name='IDToken1']"
+      - "input[name='username']"
+      - "input[type='email']"
+      - "input[autocomplete='username']"
+    value: "{{ username }}"
+    selector_timeout_ms: 4000
+
+  # Password field (fallback selector list)
+  - action: fill
+    selector:
+      - "input#IDToken2"
+      - "input[name='IDToken2']"
+      - "input[name='password']"
+      - "input[type='password']"
+      - "input[autocomplete='current-password']"
+    value: "{{ password }}"
+    selector_timeout_ms: 4000
+
+  # Sign in / submit button (fallback selector list)
+  - action: click
+    selector:
+      - "button[type='submit']"
+      - "input[type='submit']"
+      - "button:has-text('Sign in')"
+      - "button:has-text('Log in')"
+      - "[aria-label='Sign in']"
+    selector_timeout_ms: 4000
+
+  # Wait and capture post-login state
+  - action: wait_for_timeout
+    ms: 8000
+
+  - action: screenshot
+    path: "artifacts/screenshots/verizon_after_login.png"
+    full_page: true

@@ -10,7 +10,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml
 from playwright.sync_api import sync_playwright
@@ -69,6 +69,37 @@ def require(step: Dict[str, Any], key: str) -> Any:
     return value
 
 
+def _selector_candidates(raw: Any) -> List[str]:
+    if isinstance(raw, str):
+        return [raw]
+    if isinstance(raw, list) and raw and all(isinstance(item, str) and item for item in raw):
+        return raw
+    raise ValueError(
+        "Selector must be a non-empty string or list of non-empty strings. "
+        f"Got: {raw!r}"
+    )
+
+
+def resolve_selector(
+    page: Any,
+    raw_selector: Any,
+    action: str,
+    selector_timeout_ms: int = 2000,
+    wait_state: str = "attached",
+) -> str:
+    candidates = _selector_candidates(raw_selector)
+    for selector in candidates:
+        try:
+            page.wait_for_selector(selector, state=wait_state, timeout=selector_timeout_ms)
+            return selector
+        except Exception:
+            continue
+    raise ValueError(
+        f"No selector candidate matched for action '{action}'. "
+        f"Tried: {candidates}"
+    )
+
+
 def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
     workflow = read_workflow(workflow_path)
     name = workflow.get("name", workflow_path.stem)
@@ -103,14 +134,24 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                 wait_until = step.get("wait_until", "domcontentloaded")
                 page.goto(url, wait_until=wait_until)
             elif action == "fill":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 value = str(require(step, "value"))
                 if step.get("clear", True):
                     page.fill(selector, value)
                 else:
                     page.locator(selector).type(value)
             elif action == "click":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 page.click(
                     selector,
                     button=step.get("button", "left"),
@@ -118,29 +159,60 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                     delay=float(step.get("delay_ms", 0)),
                 )
             elif action == "type":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 text = str(require(step, "text"))
                 page.locator(selector).type(text, delay=float(step.get("delay_ms", 0)))
             elif action == "press":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 key = str(require(step, "key"))
                 page.press(selector, key)
             elif action == "select":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 if "values" in step:
                     values = step["values"]
                 else:
                     values = require(step, "value")
                 page.select_option(selector, values)
             elif action == "check":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 page.check(selector)
             elif action == "uncheck":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 page.uncheck(selector)
             elif action == "wait_for_selector":
-                selector = require(step, "selector")
                 state = step.get("state", "visible")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", timeout_ms)),
+                    wait_state=state,
+                )
                 page.wait_for_selector(selector, state=state)
             elif action == "wait_for_timeout":
                 ms = int(require(step, "ms"))
@@ -154,13 +226,23 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                 screenshot_path.parent.mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(screenshot_path), full_page=bool(step.get("full_page", False)))
             elif action == "extract_text":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 save_as = require(step, "save_as")
                 text = page.locator(selector).inner_text()
                 context[save_as] = text
                 print(f"    saved text into '{{{{ {save_as} }}}}'")
             elif action == "extract_attr":
-                selector = require(step, "selector")
+                selector = resolve_selector(
+                    page,
+                    require(step, "selector"),
+                    action=action,
+                    selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                )
                 attr = require(step, "attr")
                 save_as = require(step, "save_as")
                 value = page.locator(selector).get_attribute(attr)
