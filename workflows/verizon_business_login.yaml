@@ -38,7 +38,7 @@ steps:
 
   # Wait for username submit to move to the next auth stage.
   - action: wait_for_url
-    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery)(?:\\?|$)"
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery|options)(?:\\?|$)"
     timeout_ms: 30000
     continue_on_error: true
 
@@ -53,6 +53,24 @@ steps:
       - "input[name='pwd_userid']"
     only_if_selector_timeout_ms: 1500
     selector_timeout_ms: 3000
+    continue_on_error: true
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery|options)(?:\\?|$)"
+    timeout_ms: 20000
+    continue_on_error: true
+
+  # Some accounts are routed to an options page first. Choose Password branch.
+  - action: click
+    selector:
+      - "a:has-text('Password')"
+      - "text=Password"
+      - ".pwdless_option_text:has-text('Password')"
+    only_if_selector:
+      - "text=How do you want to log in?"
+      - "a:has-text('Password')"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 5000
     continue_on_error: true
 
   - action: wait_for_url
