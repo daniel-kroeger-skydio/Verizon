@@ -158,6 +158,8 @@ commonly an invalid/format-mismatched ICCID).
 The ICCID input is normalized to digits-only and validated to 20 digits before
 submission. A pre-submit screenshot is saved to
 `artifacts/screenshots/byod_before_confirm.png`.
+The flow also attempts to dismiss the cookie banner and disables the promo
+toggle for the Month-to-Month selection path.
 
 ## Example snippet
 

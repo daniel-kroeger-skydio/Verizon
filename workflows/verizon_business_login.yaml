@@ -237,12 +237,26 @@ steps:
     state: attached
     selector_timeout_ms: 90000
 
+  # Dismiss cookie banner if present to avoid overlay side effects.
+  - action: click
+    selector:
+      - "button:has-text('Close')"
+    selector_timeout_ms: 3000
+    continue_on_error: true
+
   # Step 5: fill BYOD form fields
   - action: click
     selector:
       - "div.radio-box-item:has-text('I want a new phone number')"
       - "text=I want a new phone number"
     selector_timeout_ms: 8000
+
+  # Ensure promotional toggle is off for Month-to-Month path.
+  - action: uncheck
+    selector:
+      - "#toggleCheckBox"
+    selector_timeout_ms: 2000
+    continue_on_error: true
 
   - action: fill
     selector:
@@ -259,6 +273,13 @@ steps:
       - "xpath=//label[normalize-space()='SIM']/following::select[1]"
       - "select[aria-label='Select-Option']"
     value: "haveOwnPSim"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_selector
+    selector:
+      - "text=SIM number"
+      - "xpath=//label[normalize-space()='SIM number']"
+    state: visible
     selector_timeout_ms: 12000
 
   # BYOD_SIM_ICCID is the only per-run variable. Prompt when not pre-set in env.
