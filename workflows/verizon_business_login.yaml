@@ -1162,13 +1162,17 @@ steps:
     state: visible
     selector_timeout_ms: 60000
     only_if_selector:
-      - "button:has-text('Save')"
-      - "button:has-text('Save and continue')"
-      - "button:has-text('Save & continue')"
-      - "button:has-text('Continue')"
-      - "button:has-text('Next')"
-      - "[role='button']:has-text('Save')"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(@disabled)]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next') and not(@disabled)]"
     only_if_selector_timeout_ms: 1500
+    only_if_selector_state: visible
+    continue_on_error: true
 
   - action: click
     selector:
@@ -1202,9 +1206,11 @@ steps:
       - "button:has-text('Save & continue')"
     only_if_not_selector_timeout_ms: 1000
     only_if_selector:
-      - "button:has-text('Continue')"
-      - "button:has-text('Next')"
-      - "button:has-text('Save and continue')"
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next') and not(@disabled)]"
     only_if_selector_timeout_ms: 1000
     only_if_selector_state: visible
     selector_timeout_ms: 12000
