@@ -171,6 +171,8 @@ ICCID entry uses both native value events and keyboard typing to better trigger
 client-side validation.
 After Confirm, the workflow validates navigation to **Review your devices** and
 saves `artifacts/screenshots/byod_review_devices.png`.
+It then clicks **Continue** on that page (ignoring duplicate-warning banner
+presence) and saves `artifacts/screenshots/byod_after_review_continue.png`.
 
 ## Example snippet
 

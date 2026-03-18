@@ -438,3 +438,22 @@ steps:
   - action: screenshot
     path: "artifacts/screenshots/byod_review_devices.png"
     full_page: true
+
+  # Continue from review page even if duplicate-warning banner is present.
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Continue')"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "button:has-text('Continue')"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_timeout
+    ms: 5000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_review_continue.png"
+    full_page: true
