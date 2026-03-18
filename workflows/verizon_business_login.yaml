@@ -905,7 +905,15 @@ steps:
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     state: visible
     selector_timeout_ms: 45000
-    continue_on_error: true
+    only_if_selector:
+      - "input[name*='first' i]:visible"
+      - "input[autocomplete='given-name' i]:visible"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+    only_if_selector_timeout_ms: 1500
 
   - action: set_input_value
     selector:
@@ -1069,6 +1077,13 @@ steps:
       - "input[autocomplete='address-level2' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'city')]/following::input[1]"
     value: "{{ byod_user_city }}"
+    only_if_selector:
+      - "input[formcontrolname*='city' i]"
+      - "input[name*='city' i]"
+      - "input[id*='city' i]"
+      - "input[autocomplete='address-level2' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'city')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 7000
     selector_state: visible
     dispatch_events: true
@@ -1081,6 +1096,12 @@ steps:
       - "select[autocomplete='address-level1' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::select[1]"
     value: "{{ byod_user_state }}"
+    only_if_selector:
+      - "select[formcontrolname*='state' i]"
+      - "select[name*='state' i]"
+      - "select[autocomplete='address-level1' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::select[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 7000
     selector_state: visible
     continue_on_error: true
@@ -1093,6 +1114,13 @@ steps:
       - "input[autocomplete='address-level1' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::input[1]"
     value: "{{ byod_user_state }}"
+    only_if_selector:
+      - "input[formcontrolname*='state' i]"
+      - "input[name*='state' i]"
+      - "input[id*='state' i]"
+      - "input[autocomplete='address-level1' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 7000
     selector_state: visible
     dispatch_events: true
@@ -1124,12 +1152,23 @@ steps:
       - "button:has-text('Save'):not([disabled])"
       - "button:has-text('Save and continue'):not([disabled])"
       - "button:has-text('Save & continue'):not([disabled])"
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
       - "[role='button']:has-text('Save')"
       - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next') and not(@disabled)]"
     state: visible
     selector_timeout_ms: 60000
-    continue_on_error: true
+    only_if_selector:
+      - "button:has-text('Save')"
+      - "button:has-text('Save and continue')"
+      - "button:has-text('Save & continue')"
+      - "button:has-text('Continue')"
+      - "button:has-text('Next')"
+      - "[role='button']:has-text('Save')"
+    only_if_selector_timeout_ms: 1500
 
   - action: click
     selector:
@@ -1140,11 +1179,11 @@ steps:
       - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     only_if_selector:
-      - "button:has-text('Save')"
-      - "button:has-text('Save and continue')"
-      - "button:has-text('Save & continue')"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
       - "[role='button']:has-text('Save')"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(@disabled)]"
     only_if_selector_timeout_ms: 1500
     selector_timeout_ms: 12000
     force: true
@@ -1167,11 +1206,27 @@ steps:
       - "button:has-text('Next')"
       - "button:has-text('Save and continue')"
     only_if_selector_timeout_ms: 1000
+    only_if_selector_state: visible
     selector_timeout_ms: 12000
     continue_on_error: true
 
   - action: wait_for_timeout
     ms: 4000
+
+  - action: extract_text
+    selector:
+      - "text=Review your order"
+      - "text=Order summary"
+      - "text=Checkout"
+      - "text=Payment"
+      - "text=Cart"
+      - "h1"
+      - "h2"
+    save_as: "byod_after_user_info_checkpoint"
+    optional: true
+    default: "Post-user-info action completed"
+    selector_timeout_ms: 2000
+    selector_state: visible
 
   - action: screenshot
     path: "artifacts/screenshots/byod_after_user_info_save.png"
