@@ -1161,18 +1161,6 @@ steps:
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next') and not(@disabled)]"
     state: visible
     selector_timeout_ms: 60000
-    only_if_selector:
-      - "button:has-text('Save'):not([disabled])"
-      - "button:has-text('Save and continue'):not([disabled])"
-      - "button:has-text('Save & continue'):not([disabled])"
-      - "button:has-text('Continue'):not([disabled])"
-      - "button:has-text('Next'):not([disabled])"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(@disabled)]"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next') and not(@disabled)]"
-    only_if_selector_timeout_ms: 1500
-    only_if_selector_state: visible
-    continue_on_error: true
 
   - action: click
     selector:
@@ -1239,17 +1227,24 @@ steps:
     full_page: true
 
   # Step 11: After save, Verizon returns to assignment page with success banner.
+  - action: wait_for_selector
+    selector:
+      - "text=SubscriberInfo added successfully"
+      - "text=Subscriber info added successfully"
+      - "text=Subscriber information added successfully"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriberinfo added successfully')]"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriber info added successfully')]"
+    state: visible
+    selector_timeout_ms: 45000
+
   - action: extract_text
     selector:
       - "text=SubscriberInfo added successfully"
-      - "text=Assign numbers and user to your new devices"
-      - "text=Assign numbers"
-      - "text=Assign number"
-      - "h1"
-      - "h2"
+      - "text=Subscriber info added successfully"
+      - "text=Subscriber information added successfully"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriberinfo added successfully')]"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriber info added successfully')]"
     save_as: "byod_assignment_return_checkpoint"
-    optional: true
-    default: "Post-save assignment page reached"
     selector_timeout_ms: 3000
     selector_state: visible
 
@@ -1266,17 +1261,8 @@ steps:
       - "button:has-text('Next'):not([disabled])"
       - "button:has-text('Proceed'):not([disabled])"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
-    only_if_selector:
-      - "button:has-text('Continue'):not([disabled])"
-      - "[role='button']:has-text('Continue')"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
-      - "button:has-text('Next'):not([disabled])"
-      - "button:has-text('Proceed'):not([disabled])"
-    only_if_selector_timeout_ms: 2000
-    only_if_selector_state: visible
     state: visible
     selector_timeout_ms: 30000
-    continue_on_error: true
 
   - action: click
     selector:
@@ -1287,17 +1273,8 @@ steps:
       - "button:has-text('Next'):not([disabled])"
       - "button:has-text('Proceed'):not([disabled])"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
-    only_if_selector:
-      - "button:has-text('Continue'):not([disabled])"
-      - "[role='button']:has-text('Continue')"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
-      - "button:has-text('Next'):not([disabled])"
-      - "button:has-text('Proceed'):not([disabled])"
-    only_if_selector_timeout_ms: 2000
-    only_if_selector_state: visible
     selector_timeout_ms: 12000
     force: true
-    continue_on_error: true
 
   - action: wait_for_timeout
     ms: 4000
