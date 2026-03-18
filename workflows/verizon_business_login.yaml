@@ -594,9 +594,73 @@ steps:
       - "button:has-text('Continue'):not([disabled])"
     selector_timeout_ms: 12000
 
+  # Step 7: Destination checkpoint after Select Plan continue.
+  # Prefer URL transition away from dataplans, but don't hard-fail if Verizon keeps URL stable.
+  - action: wait_for_url
+    regex: "^https://mb\\.verizonwireless\\.com/mbt/secure/index\\?.*#/(?!nso-landing/dataplans).+$"
+    timeout_ms: 90000
+    continue_on_error: true
+
   - action: wait_for_timeout
-    ms: 5000
+    ms: 4000
+
+  - action: extract_text
+    selector:
+      - "text=Device protection"
+      - "text=Protect your device"
+      - "text=Protection for your device"
+      - "text=Add-ons"
+      - "text=Accessories"
+      - "text=Review your order"
+      - "text=Order summary"
+      - "h1"
+      - "h2"
+    save_as: "post_select_plan_destination_checkpoint"
+    optional: true
+    default: "Post-Select-Plan destination reached"
+    selector_timeout_ms: 3000
+    selector_state: visible
 
   - action: screenshot
-    path: "artifacts/screenshots/byod_after_plan_continue.png"
+    path: "artifacts/screenshots/byod_after_plan_destination_checkpoint.png"
+    full_page: true
+
+  # Step 8: Next-page automation (common Verizon branch: Device Protection).
+  - action: click
+    selector:
+      - "button:has-text('No thanks')"
+      - "button:has-text('No Thanks')"
+      - "button:has-text('No, thanks')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+    only_if_selector:
+      - "text=Device protection"
+      - "text=Protect your device"
+      - "text=Protection for your device"
+      - "text=Device Protection"
+    only_if_selector_timeout_ms: 2500
+    selector_timeout_ms: 8000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: click
+    selector:
+      - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'protection')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    only_if_selector:
+      - "text=Device protection"
+      - "text=Protect your device"
+      - "text=Protection for your device"
+      - "text=Device Protection"
+    only_if_selector_timeout_ms: 2500
+    selector_timeout_ms: 10000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 4000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_next_page_automation.png"
     full_page: true
