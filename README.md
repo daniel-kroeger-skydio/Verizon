@@ -111,6 +111,7 @@ Use `selector_state` (for example `visible`) to avoid hidden-element matches.
 - `extract_attr` (`selector`, `attr`, `save_as`)
 - `set_variable` (`name`, optional `value`)
 - `normalize_variable` (`name`, `mode` = `strip` or `digits_only`, optional `min_length`, `max_length`)
+- `set_input_value` (`selector`, `value`, optional `selector_state`, `dispatch_events`)
 - `prompt_variable` (`name`, optional `prompt`, `secret`, `if_empty_only`, `required`, `default`)
 - `set_variable_from_file` (`name`, `path`, optional `if_empty_only`, `only_if_selector`, `timeout_ms`, `poll_interval_ms`, `delete_after_read`)
 - `set_checkbox` (`selector`, `checked`)

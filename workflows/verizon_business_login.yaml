@@ -318,13 +318,14 @@ steps:
     min_length: 20
     max_length: 20
 
-  - action: fill
+  - action: set_input_value
     selector:
       - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
       - "input[aria-label='Quantity']:visible"
     value: "{{ byod_sim_iccid }}"
     selector_timeout_ms: 12000
     selector_state: visible
+    dispatch_events: true
 
   - action: extract_attr
     selector:

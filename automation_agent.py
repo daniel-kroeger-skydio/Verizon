@@ -307,6 +307,42 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         }""",
                         checked,
                     )
+                elif action == "set_input_value":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
+                    )
+                    value = str(require(step, "value"))
+                    dispatch_events = bool(step.get("dispatch_events", True))
+                    page.locator(selector).first.evaluate(
+                        """(el, payload) => {
+                            const value = payload.value;
+                            const dispatchEvents = payload.dispatchEvents;
+                            const setNative = (target, nextValue) => {
+                                const proto = target instanceof HTMLTextAreaElement
+                                    ? HTMLTextAreaElement.prototype
+                                    : HTMLInputElement.prototype;
+                                const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+                                if (descriptor && descriptor.set) {
+                                    descriptor.set.call(target, nextValue);
+                                } else {
+                                    target.value = nextValue;
+                                }
+                            };
+                            if (!(el instanceof HTMLInputElement) && !(el instanceof HTMLTextAreaElement)) {
+                                throw new Error('set_input_value target must be an input or textarea');
+                            }
+                            setNative(el, value);
+                            if (dispatchEvents) {
+                                el.dispatchEvent(new Event('input', { bubbles: true }));
+                                el.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        }""",
+                        {"value": value, "dispatchEvents": dispatch_events},
+                    )
                 elif action == "wait_for_selector":
                     state = step.get("state", "visible")
                     selector = resolve_selector(
@@ -345,6 +381,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         require(step, "selector"),
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
                     )
                     save_as = require(step, "save_as")
                     text = page.locator(selector).inner_text()
@@ -356,6 +393,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         require(step, "selector"),
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
                     )
                     attr = require(step, "attr")
                     save_as = require(step, "save_as")
