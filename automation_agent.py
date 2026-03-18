@@ -236,6 +236,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         button=step.get("button", "left"),
                         click_count=int(step.get("click_count", 1)),
                         delay=float(step.get("delay_ms", 0)),
+                        force=bool(step.get("force", False)),
                     )
                 elif action == "type":
                     selector = resolve_selector(

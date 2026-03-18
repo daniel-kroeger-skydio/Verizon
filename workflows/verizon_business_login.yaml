@@ -259,9 +259,21 @@ steps:
     checked: false
     selector_timeout_ms: 2000
 
+  # Fallback: force-click visual switch if still shown as ON.
+  - action: click
+    selector:
+      - ".ToggleSwitchSlider.SwitchOn"
+    force: true
+    selector_timeout_ms: 2000
+    continue_on_error: true
+    only_if_selector:
+      - ".ToggleSwitchSlider.SwitchOn"
+    only_if_selector_timeout_ms: 1000
+
   - action: wait_for_selector
     selector:
       - "#toggleCheckBox:not(:checked)"
+      - ".ToggleSwitchSlider.SwitchOff"
     state: attached
     selector_timeout_ms: 5000
 
@@ -306,7 +318,8 @@ steps:
 
   - action: fill
     selector:
-      - "xpath=//label[normalize-space()='SIM number']/following::input[1]"
+      - "xpath=//label[normalize-space()='SIM number']/following-sibling::input[1]"
+      - "xpath=//label[normalize-space()='SIM number']/parent::*//input[1]"
       - "input[aria-label='Quantity']"
     value: "{{ byod_sim_iccid }}"
     selector_timeout_ms: 12000
@@ -314,7 +327,8 @@ steps:
   # Trigger validation by blurring SIM number field.
   - action: press
     selector:
-      - "xpath=//label[normalize-space()='SIM number']/following::input[1]"
+      - "xpath=//label[normalize-space()='SIM number']/following-sibling::input[1]"
+      - "xpath=//label[normalize-space()='SIM number']/parent::*//input[1]"
       - "input[aria-label='Quantity']"
     key: "Tab"
     selector_timeout_ms: 8000

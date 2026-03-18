@@ -160,6 +160,7 @@ submission. A pre-submit screenshot is saved to
 `artifacts/screenshots/byod_before_confirm.png`.
 The flow also attempts to dismiss the cookie banner and explicitly sets the
 promo toggle checkbox off for the Month-to-Month selection path.
+If the visual toggle still appears ON, a forced fallback click is applied.
 
 ## Example snippet
 
