@@ -1261,29 +1261,43 @@ steps:
     selector:
       - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign')]/following::button[contains(normalize-space(),'Continue') and not(@disabled) and not(@aria-disabled='true')][1]"
       - "button:has-text('Continue'):not([disabled])"
+      - "[role='button']:has-text('Continue')"
+      - "xpath=//a[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Proceed'):not([disabled])"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     only_if_selector:
-      - "text=SubscriberInfo added successfully"
-      - "text=Assign numbers and user to your new devices"
-      - "text=Assign numbers"
-      - "text=Assign number"
+      - "button:has-text('Continue'):not([disabled])"
+      - "[role='button']:has-text('Continue')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Proceed'):not([disabled])"
     only_if_selector_timeout_ms: 2000
+    only_if_selector_state: visible
     state: visible
-    selector_timeout_ms: 60000
+    selector_timeout_ms: 30000
+    continue_on_error: true
 
   - action: click
     selector:
       - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign')]/following::button[contains(normalize-space(),'Continue') and not(@disabled) and not(@aria-disabled='true')][1]"
       - "button:has-text('Continue'):not([disabled])"
+      - "[role='button']:has-text('Continue')"
+      - "xpath=//a[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Proceed'):not([disabled])"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     only_if_selector:
-      - "text=SubscriberInfo added successfully"
-      - "text=Assign numbers and user to your new devices"
-      - "text=Assign numbers"
-      - "text=Assign number"
+      - "button:has-text('Continue'):not([disabled])"
+      - "[role='button']:has-text('Continue')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Proceed'):not([disabled])"
     only_if_selector_timeout_ms: 2000
+    only_if_selector_state: visible
     selector_timeout_ms: 12000
     force: true
+    continue_on_error: true
 
   - action: wait_for_timeout
     ms: 4000
