@@ -17,6 +17,10 @@ variables:
   byod_url: "https://mb.verizonwireless.com/mbt/secure/index?appName=comm&transType=NSO&navtrk=globalnav:shop:bringyourowndevice#/nso-landing/devicevalidation/mobile-evolution"
   byod_device_imei: "358339770214328"
   byod_sim_iccid: "${BYOD_SIM_ICCID}"
+  byod_assign_number: "${BYOD_ASSIGN_NUMBER}"
+  byod_user_first_name: "${BYOD_USER_FIRST_NAME}"
+  byod_user_last_name: "${BYOD_USER_LAST_NAME}"
+  byod_user_email: "${BYOD_USER_EMAIL}"
 
 steps:
   - action: goto
@@ -673,4 +677,265 @@ steps:
 
   - action: screenshot
     path: "artifacts/screenshots/byod_after_next_page_automation.png"
+    full_page: true
+
+  # Step 9: Number assignment + user information page.
+  - action: wait_for_selector
+    selector:
+      - "text=Assign numbers"
+      - "text=Assign number"
+      - "text=Assign line"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+    state: visible
+    selector_timeout_ms: 60000
+    continue_on_error: true
+
+  - action: extract_text
+    selector:
+      - "text=Assign numbers"
+      - "text=Assign number"
+      - "text=Assign line"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "h1"
+      - "h2"
+    save_as: "byod_assignment_checkpoint"
+    optional: true
+    default: "Assignment page reached"
+    selector_timeout_ms: 2500
+    selector_state: visible
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_assignment_checkpoint.png"
+    full_page: true
+
+  # Number assignment is optional: set BYOD_ASSIGN_NUMBER or enter at prompt.
+  - action: prompt_variable
+    name: "byod_assign_number"
+    prompt: "Enter number to assign to this line (10-11 digits, optional): "
+    secret: false
+    if_empty_only: true
+    required: false
+    only_if_selector:
+      - "select[formcontrolname*='mdn' i]"
+      - "select[name*='number' i]"
+      - "input[formcontrolname*='mdn' i]"
+      - "input[name*='phone' i]"
+      - "input[name*='number' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'number')]/following::input[1]"
+    only_if_selector_timeout_ms: 1500
+
+  - action: normalize_variable
+    name: "byod_assign_number"
+    mode: "digits_only"
+    min_length: 10
+    max_length: 11
+    only_if_variable_set: "byod_assign_number"
+
+  # Custom dropdown path: open number picker, then click exact number if shown.
+  - action: click
+    selector:
+      - "[role='combobox'][aria-label*='number' i]"
+      - "[role='combobox'][id*='number' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'number')]/following::*[@role='combobox'][1]"
+    only_if_variable_set: "byod_assign_number"
+    only_if_selector:
+      - "[role='combobox'][aria-label*='number' i]"
+      - "[role='combobox'][id*='number' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 5000
+    continue_on_error: true
+
+  - action: click
+    selector:
+      - "text={{ byod_assign_number }}"
+      - "xpath=//*[contains(normalize-space(), '{{ byod_assign_number }}')]"
+    only_if_variable_set: "byod_assign_number"
+    only_if_selector:
+      - "text={{ byod_assign_number }}"
+      - "xpath=//*[contains(normalize-space(), '{{ byod_assign_number }}')]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 5000
+    continue_on_error: true
+
+  # Native <select> path.
+  - action: select
+    selector:
+      - "select[formcontrolname*='mdn' i]:visible"
+      - "select[name*='number' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'number')]/following::select[1]"
+    value: "{{ byod_assign_number }}"
+    only_if_variable_set: "byod_assign_number"
+    only_if_selector:
+      - "select[formcontrolname*='mdn' i]"
+      - "select[name*='number' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    continue_on_error: true
+
+  # Free-text input path.
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='mdn' i]:visible"
+      - "input[name*='phone' i]:visible"
+      - "input[name*='number' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'number')]/following::input[1]"
+    value: "{{ byod_assign_number }}"
+    only_if_variable_set: "byod_assign_number"
+    only_if_selector:
+      - "input[formcontrolname*='mdn' i]"
+      - "input[name*='phone' i]"
+      - "input[name*='number' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: press
+    selector:
+      - "input[formcontrolname*='mdn' i]:visible"
+      - "input[name*='phone' i]:visible"
+      - "input[name*='number' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'number')]/following::input[1]"
+    key: "Tab"
+    only_if_variable_set: "byod_assign_number"
+    only_if_selector:
+      - "input[formcontrolname*='mdn' i]"
+      - "input[name*='phone' i]"
+      - "input[name*='number' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 5000
+    selector_state: visible
+    continue_on_error: true
+
+  # Prompt + fill user details when these fields exist.
+  - action: prompt_variable
+    name: "byod_user_first_name"
+    prompt: "Enter assigned user's first name: "
+    secret: false
+    if_empty_only: true
+    required: true
+    only_if_selector:
+      - "input[formcontrolname*='first' i]"
+      - "input[name*='first' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    only_if_selector_timeout_ms: 1500
+
+  - action: prompt_variable
+    name: "byod_user_last_name"
+    prompt: "Enter assigned user's last name: "
+    secret: false
+    if_empty_only: true
+    required: true
+    only_if_selector:
+      - "input[formcontrolname*='last' i]"
+      - "input[name*='last' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
+    only_if_selector_timeout_ms: 1500
+
+  - action: prompt_variable
+    name: "byod_user_email"
+    prompt: "Enter assigned user's email: "
+    secret: false
+    if_empty_only: true
+    required: true
+    only_if_selector:
+      - "input[type='email']"
+      - "input[formcontrolname*='email' i]"
+      - "input[name*='email' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
+    only_if_selector_timeout_ms: 1500
+
+  - action: normalize_variable
+    name: "byod_user_email"
+    mode: "strip"
+    only_if_variable_set: "byod_user_email"
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='first' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    value: "{{ byod_user_first_name }}"
+    only_if_variable_set: "byod_user_first_name"
+    only_if_selector:
+      - "input[formcontrolname*='first' i]"
+      - "input[name*='first' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='last' i]:visible"
+      - "input[name*='last' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
+    value: "{{ byod_user_last_name }}"
+    only_if_variable_set: "byod_user_last_name"
+    only_if_selector:
+      - "input[formcontrolname*='last' i]"
+      - "input[name*='last' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[type='email']:visible"
+      - "input[formcontrolname*='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
+    value: "{{ byod_user_email }}"
+    only_if_variable_set: "byod_user_email"
+    only_if_selector:
+      - "input[type='email']"
+      - "input[formcontrolname*='email' i]"
+      - "input[name*='email' i]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_assignment_filled.png"
+    full_page: true
+
+  # Continue if an assignment-related page is still active.
+  - action: click
+    selector:
+      - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+    only_if_selector:
+      - "text=Assign numbers"
+      - "text=Assign number"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+    only_if_selector_timeout_ms: 2000
+    selector_timeout_ms: 10000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 3500
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_assignment_continue.png"
     full_page: true
