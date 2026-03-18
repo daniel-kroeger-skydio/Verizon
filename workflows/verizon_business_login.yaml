@@ -279,6 +279,7 @@ steps:
 
   - action: fill
     selector:
+      - "input[formcontrolname='deviceId']:visible"
       - "xpath=//label[normalize-space()='Device ID (IMEI)']/following::input[@type='text' and not(@disabled)][1]"
       - "input.Form-input.width:visible"
     value: "{{ byod_device_imei }}"
@@ -290,6 +291,7 @@ steps:
 
   - action: select
     selector:
+      - "select[formcontrolname='simType']:visible"
       - "xpath=//label[normalize-space()='SIM']/following::select[not(@disabled)][1]"
       - "select[aria-label='Select-Option']:visible"
     value: "haveOwnPSim"
@@ -320,6 +322,7 @@ steps:
 
   - action: set_input_value
     selector:
+      - "input[formcontrolname='simId']:visible"
       - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
       - "input[aria-label='Quantity']:visible"
     value: "{{ byod_sim_iccid }}"
@@ -329,6 +332,7 @@ steps:
 
   - action: extract_attr
     selector:
+      - "input[formcontrolname='simId']:visible"
       - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
       - "input[aria-label='Quantity']:visible"
     attr: "value"
@@ -340,6 +344,7 @@ steps:
   # Trigger validation by blurring SIM number field.
   - action: press
     selector:
+      - "input[formcontrolname='simId']:visible"
       - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
       - "input[aria-label='Quantity']:visible"
     key: "Tab"

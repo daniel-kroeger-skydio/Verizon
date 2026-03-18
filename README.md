@@ -165,6 +165,8 @@ submission. A pre-submit screenshot is saved to
 The flow also attempts to dismiss the cookie banner and explicitly sets the
 promo toggle checkbox off for the Month-to-Month selection path.
 If the visual toggle still appears ON, a forced fallback click is applied.
+BYOD field targeting prefers Verizon form control selectors (for example,
+`formcontrolname='deviceId'`, `simType`, and `simId`) for stability.
 
 ## Example snippet
 
