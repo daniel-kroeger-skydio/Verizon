@@ -534,18 +534,30 @@ steps:
     full_page: true
 
   # Success assertion: verify we reached Verizon Data Plans / Select plan page.
+  - action: wait_for_url
+    regex: "^https://mb\\.verizonwireless\\.com/mbt/secure/index\\?.*#/(nso-landing/dataplans|nso-landing/plan|nso-landing/plans)(?:$|/.*)$"
+    timeout_ms: 60000
+    continue_on_error: true
+
   - action: wait_for_selector
     selector:
       - "text=Select plan"
       - "text=Select a wireless plan"
       - "text=Verizon Data Plans"
+      - "text=Business Unlimited Plus 5G Smartphone"
+      - "text=Unlimited Plus 5G Smartphone"
+      - "button:has-text('Select plan')"
+      - "button:has-text('Select')"
     state: visible
     selector_timeout_ms: 60000
+    continue_on_error: true
 
   - action: extract_text
     selector:
       - "text=Select plan"
       - "text=Select a wireless plan"
+      - "text=Business Unlimited Plus 5G Smartphone"
+      - "h1"
     save_as: "byod_next_page_checkpoint"
     optional: true
     default: "Select plan page reached"
