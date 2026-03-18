@@ -561,10 +561,21 @@ steps:
     state: visible
     selector_timeout_ms: 90000
 
+  - action: wait_for_selector
+    selector:
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled)]"
+      - "button:has-text('Select')"
+      - "button:has-text('SELECT')"
+    state: visible
+    selector_timeout_ms: 30000
+
   - action: click
     selector:
-      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(normalize-space(),'Select plan')]][1]//button[contains(normalize-space(),'Select plan')][1]"
-      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/following::button[contains(normalize-space(),'Select plan')][1]"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select')]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select')][1]"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/following::button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled)][1]"
+      - "xpath=(//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled)])[1]"
+      - "button:has-text('Select')"
+      - "button:has-text('SELECT')"
     selector_timeout_ms: 20000
 
   - action: wait_for_timeout
