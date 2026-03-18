@@ -842,10 +842,13 @@ steps:
     selector:
       - "text=Add user information to your selected device"
       - "text=Add user information"
+      - "text=Add a user"
+      - "text=Create new user"
       - "text=First name"
       - "text=Last name"
       - "text=Email"
       - "text=Address"
+      - "text=Save"
     state: visible
     selector_timeout_ms: 60000
 
@@ -854,20 +857,31 @@ steps:
     selector:
       - "button:has-text('Add new user')"
       - "button:has-text('Add New User')"
+      - "button:has-text('Add a user')"
+      - "button:has-text('Create new user')"
+      - "button:has-text('Create User')"
       - "text=Add new user"
+      - "text=Add a user"
+      - "text=Create new user"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add new user')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'create new user')]"
     only_if_not_selector:
       - "input[formcontrolname*='first' i]"
       - "input[name*='first' i]"
       - "input[placeholder*='First' i]"
       - "input[id*='first' i]"
       - "input[aria-label*='First' i]"
+      - "input[autocomplete='given-name' i]"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
     only_if_not_selector_timeout_ms: 1200
     only_if_selector:
       - "button:has-text('Add new user')"
       - "button:has-text('Add New User')"
       - "text=Add new user"
+      - "button:has-text('Add a user')"
+      - "button:has-text('Create new user')"
+      - "text=Add a user"
+      - "text=Create new user"
     only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 7000
     continue_on_error: true
@@ -879,9 +893,16 @@ steps:
       - "input[placeholder*='First' i]:visible"
       - "input[id*='first' i]:visible"
       - "input[aria-label*='First' i]:visible"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='given' i]:visible"
+      - "input[id*='given' i]:visible"
+      - "input[name*='fname' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
       - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
       - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     state: visible
     selector_timeout_ms: 45000
     continue_on_error: true
@@ -893,6 +914,10 @@ steps:
       - "input[placeholder*='First' i]:visible"
       - "input[id*='first' i]:visible"
       - "input[aria-label*='First' i]:visible"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='given' i]:visible"
+      - "input[id*='given' i]:visible"
+      - "input[name*='fname' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
     value: "{{ byod_user_first_name }}"
     only_if_selector:
@@ -901,6 +926,10 @@ steps:
       - "input[placeholder*='First' i]"
       - "input[id*='first' i]"
       - "input[aria-label*='First' i]"
+      - "input[autocomplete='given-name' i]"
+      - "input[name*='given' i]"
+      - "input[id*='given' i]"
+      - "input[name*='fname' i]"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
     only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 8000
@@ -915,6 +944,11 @@ steps:
       - "input[placeholder*='Last' i]:visible"
       - "input[id*='last' i]:visible"
       - "input[aria-label*='Last' i]:visible"
+      - "input[autocomplete='family-name' i]:visible"
+      - "input[name*='family' i]:visible"
+      - "input[id*='family' i]:visible"
+      - "input[name*='lname' i]:visible"
+      - "input[name*='surname' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
     value: "{{ byod_user_last_name }}"
     only_if_selector:
@@ -923,6 +957,11 @@ steps:
       - "input[placeholder*='Last' i]"
       - "input[id*='last' i]"
       - "input[aria-label*='Last' i]"
+      - "input[autocomplete='family-name' i]"
+      - "input[name*='family' i]"
+      - "input[id*='family' i]"
+      - "input[name*='lname' i]"
+      - "input[name*='surname' i]"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
     only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 8000
@@ -937,6 +976,8 @@ steps:
       - "input[name*='email' i]:visible"
       - "input[id*='email' i]:visible"
       - "input[aria-label*='Email' i]:visible"
+      - "input[autocomplete='email' i]:visible"
+      - "input[name*='mail' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
     value: "{{ byod_user_email }}"
     only_if_selector:
@@ -945,6 +986,8 @@ steps:
       - "input[name*='email' i]"
       - "input[id*='email' i]"
       - "input[aria-label*='Email' i]"
+      - "input[autocomplete='email' i]"
+      - "input[name*='mail' i]"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
     only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 8000
@@ -959,6 +1002,8 @@ steps:
       - "input[name*='address' i]:visible"
       - "input[id*='address' i]:visible"
       - "input[aria-label*='Address' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "input[name*='street' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
     value: "{{ byod_user_address1 }}"
     only_if_selector:
@@ -967,6 +1012,8 @@ steps:
       - "input[name*='address' i]"
       - "input[id*='address' i]"
       - "input[aria-label*='Address' i]"
+      - "input[autocomplete='address-line1' i]"
+      - "input[name*='street' i]"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
     only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 12000
@@ -995,7 +1042,16 @@ steps:
       - "input[name*='address1' i]:visible"
       - "input[name*='address' i]:visible"
       - "input[id*='address' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    only_if_selector:
+      - "input[formcontrolname*='address' i]"
+      - "input[name*='address1' i]"
+      - "input[name*='address' i]"
+      - "input[id*='address' i]"
+      - "input[autocomplete='address-line1' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     key: "Tab"
     selector_timeout_ms: 6000
     selector_state: visible
@@ -1010,6 +1066,7 @@ steps:
       - "input[formcontrolname*='city' i]:visible"
       - "input[name*='city' i]:visible"
       - "input[id*='city' i]:visible"
+      - "input[autocomplete='address-level2' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'city')]/following::input[1]"
     value: "{{ byod_user_city }}"
     selector_timeout_ms: 7000
@@ -1021,6 +1078,7 @@ steps:
     selector:
       - "select[formcontrolname*='state' i]:visible"
       - "select[name*='state' i]:visible"
+      - "select[autocomplete='address-level1' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::select[1]"
     value: "{{ byod_user_state }}"
     selector_timeout_ms: 7000
@@ -1032,6 +1090,7 @@ steps:
       - "input[formcontrolname*='state' i]:visible"
       - "input[name*='state' i]:visible"
       - "input[id*='state' i]:visible"
+      - "input[autocomplete='address-level1' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::input[1]"
     value: "{{ byod_user_state }}"
     selector_timeout_ms: 7000
@@ -1045,6 +1104,7 @@ steps:
       - "input[name*='zip' i]:visible"
       - "input[id*='zip' i]:visible"
       - "input[aria-label*='Zip' i]:visible"
+      - "input[autocomplete='postal-code' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip')]/following::input[1]"
     value: "{{ byod_user_zip }}"
     selector_timeout_ms: 7000
@@ -1062,16 +1122,53 @@ steps:
   - action: wait_for_selector
     selector:
       - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "[role='button']:has-text('Save')"
       - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     state: visible
     selector_timeout_ms: 60000
+    continue_on_error: true
 
   - action: click
     selector:
       - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "[role='button']:has-text('Save')"
       - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    only_if_selector:
+      - "button:has-text('Save')"
+      - "button:has-text('Save and continue')"
+      - "button:has-text('Save & continue')"
+      - "[role='button']:has-text('Save')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save')]"
+    only_if_selector_timeout_ms: 1500
     selector_timeout_ms: 12000
     force: true
+    continue_on_error: true
+
+  # Fallback for variants that expose Next/Continue instead of Save.
+  - action: click
+    selector:
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+    only_if_not_selector:
+      - "button:has-text('Save')"
+      - "button:has-text('Save and continue')"
+      - "button:has-text('Save & continue')"
+    only_if_not_selector_timeout_ms: 1000
+    only_if_selector:
+      - "button:has-text('Continue')"
+      - "button:has-text('Next')"
+      - "button:has-text('Save and continue')"
+    only_if_selector_timeout_ms: 1000
+    selector_timeout_ms: 12000
+    continue_on_error: true
 
   - action: wait_for_timeout
     ms: 4000
