@@ -398,7 +398,8 @@ steps:
       - "text=Device Id is required."
     save_as: "byod_validation_hint"
     selector_timeout_ms: 1500
-    continue_on_error: true
+    optional: true
+    default: ""
 
   - action: select
     selector:
@@ -419,9 +420,21 @@ steps:
       - "button:has-text('Confirm devices'):not([disabled])"
     selector_timeout_ms: 12000
 
-  - action: wait_for_timeout
-    ms: 5000
+  - action: wait_for_selector
+    selector:
+      - "text=Review your devices."
+      - "h1:has-text('Review your devices.')"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: extract_text
+    selector:
+      - "text=already in the cart and hence cannot be added again."
+    save_as: "byod_review_warning"
+    selector_timeout_ms: 2000
+    optional: true
+    default: ""
 
   - action: screenshot
-    path: "artifacts/screenshots/byod_landing.png"
+    path: "artifacts/screenshots/byod_review_devices.png"
     full_page: true

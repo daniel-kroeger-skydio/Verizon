@@ -169,6 +169,8 @@ BYOD field targeting prefers Verizon form control selectors (for example,
 `formcontrolname='deviceId'`, `simType`, and `simId`) for stability.
 ICCID entry uses both native value events and keyboard typing to better trigger
 client-side validation.
+After Confirm, the workflow validates navigation to **Review your devices** and
+saves `artifacts/screenshots/byod_review_devices.png`.
 
 ## Example snippet
 

@@ -376,28 +376,44 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                     screenshot_path.parent.mkdir(parents=True, exist_ok=True)
                     page.screenshot(path=str(screenshot_path), full_page=bool(step.get("full_page", False)))
                 elif action == "extract_text":
-                    selector = resolve_selector(
-                        page,
-                        require(step, "selector"),
-                        action=action,
-                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                        wait_state=str(step.get("selector_state", "attached")),
-                    )
                     save_as = require(step, "save_as")
-                    text = page.locator(selector).inner_text()
+                    optional = bool(step.get("optional", False))
+                    default = str(step.get("default", ""))
+                    try:
+                        selector = resolve_selector(
+                            page,
+                            require(step, "selector"),
+                            action=action,
+                            selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                            wait_state=str(step.get("selector_state", "attached")),
+                        )
+                        text = page.locator(selector).inner_text()
+                    except Exception:
+                        if optional:
+                            context[save_as] = default
+                            continue
+                        raise
                     context[save_as] = text
                     print(f"    saved text into '{{{{ {save_as} }}}}'")
                 elif action == "extract_attr":
-                    selector = resolve_selector(
-                        page,
-                        require(step, "selector"),
-                        action=action,
-                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
-                        wait_state=str(step.get("selector_state", "attached")),
-                    )
                     attr = require(step, "attr")
                     save_as = require(step, "save_as")
-                    value = page.locator(selector).get_attribute(attr)
+                    optional = bool(step.get("optional", False))
+                    default = str(step.get("default", ""))
+                    try:
+                        selector = resolve_selector(
+                            page,
+                            require(step, "selector"),
+                            action=action,
+                            selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                            wait_state=str(step.get("selector_state", "attached")),
+                        )
+                        value = page.locator(selector).get_attribute(attr)
+                    except Exception:
+                        if optional:
+                            context[save_as] = default
+                            continue
+                        raise
                     context[save_as] = "" if value is None else value
                     print(f"    saved attr into '{{{{ {save_as} }}}}'")
                 elif action == "set_variable":
