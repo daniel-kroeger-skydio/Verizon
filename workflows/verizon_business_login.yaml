@@ -279,20 +279,22 @@ steps:
 
   - action: fill
     selector:
-      - "xpath=//label[normalize-space()='Device ID (IMEI)']/following::input[1]"
-      - "input.Form-input.width"
+      - "xpath=//label[normalize-space()='Device ID (IMEI)']/following::input[@type='text' and not(@disabled)][1]"
+      - "input.Form-input.width:visible"
     value: "{{ byod_device_imei }}"
     selector_timeout_ms: 12000
+    selector_state: visible
 
   - action: wait_for_timeout
     ms: 1500
 
   - action: select
     selector:
-      - "xpath=//label[normalize-space()='SIM']/following::select[1]"
-      - "select[aria-label='Select-Option']"
+      - "xpath=//label[normalize-space()='SIM']/following::select[not(@disabled)][1]"
+      - "select[aria-label='Select-Option']:visible"
     value: "haveOwnPSim"
     selector_timeout_ms: 12000
+    selector_state: visible
 
   - action: wait_for_selector
     selector:
@@ -318,20 +320,30 @@ steps:
 
   - action: fill
     selector:
-      - "xpath=//label[normalize-space()='SIM number']/following-sibling::input[1]"
-      - "xpath=//label[normalize-space()='SIM number']/parent::*//input[1]"
-      - "input[aria-label='Quantity']"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
     value: "{{ byod_sim_iccid }}"
     selector_timeout_ms: 12000
+    selector_state: visible
+
+  - action: extract_attr
+    selector:
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    attr: "value"
+    save_as: "byod_sim_iccid_ui_value"
+    selector_state: visible
+    selector_timeout_ms: 3000
+    continue_on_error: true
 
   # Trigger validation by blurring SIM number field.
   - action: press
     selector:
-      - "xpath=//label[normalize-space()='SIM number']/following-sibling::input[1]"
-      - "xpath=//label[normalize-space()='SIM number']/parent::*//input[1]"
-      - "input[aria-label='Quantity']"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
     key: "Tab"
     selector_timeout_ms: 8000
+    selector_state: visible
 
   - action: wait_for_timeout
     ms: 1500
@@ -353,10 +365,11 @@ steps:
 
   - action: select
     selector:
-      - "select[name='contract0']"
-      - "xpath=//label[normalize-space()='Contract term']/following::select[1]"
+      - "select[name='contract0']:visible"
+      - "xpath=//label[normalize-space()='Contract term']/following::select[not(@disabled)][1]"
     value: "0"
     selector_timeout_ms: 12000
+    selector_state: visible
 
   - action: wait_for_selector
     selector:

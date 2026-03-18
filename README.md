@@ -92,6 +92,7 @@ Set `continue_on_error: true` on a step when it is optional for some account flo
 Use `only_if_variable_set` / `only_if_variable_empty` for branch-like step control.
 Use `only_if_selector` / `only_if_not_selector` to run steps only on matching screens.
 Use `only_if_url_regex` / `only_if_not_url_regex` to gate steps by current URL.
+Use `selector_state` (for example `visible`) to avoid hidden-element matches.
 
 ### Supported actions
 
@@ -109,8 +110,10 @@ Use `only_if_url_regex` / `only_if_not_url_regex` to gate steps by current URL.
 - `extract_text` (`selector`, `save_as`)
 - `extract_attr` (`selector`, `attr`, `save_as`)
 - `set_variable` (`name`, optional `value`)
+- `normalize_variable` (`name`, `mode` = `strip` or `digits_only`, optional `min_length`, `max_length`)
 - `prompt_variable` (`name`, optional `prompt`, `secret`, `if_empty_only`, `required`, `default`)
 - `set_variable_from_file` (`name`, `path`, optional `if_empty_only`, `only_if_selector`, `timeout_ms`, `poll_interval_ms`, `delete_after_read`)
+- `set_checkbox` (`selector`, `checked`)
 - conditional step gates: `only_if_variable_set`, `only_if_variable_empty`
 - selector-based gates: `only_if_selector`, `only_if_not_selector`
 - URL-based gates: `only_if_url_regex`, `only_if_not_url_regex`

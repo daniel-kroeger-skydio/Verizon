@@ -218,6 +218,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         require(step, "selector"),
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
                     )
                     value = str(require(step, "value"))
                     if step.get("clear", True):
@@ -244,6 +245,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         require(step, "selector"),
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
                     )
                     text = str(require(step, "text"))
                     page.locator(selector).type(text, delay=float(step.get("delay_ms", 0)))
@@ -253,6 +255,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         require(step, "selector"),
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
                     )
                     key = str(require(step, "key"))
                     page.press(selector, key)
@@ -262,6 +265,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         require(step, "selector"),
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                        wait_state=str(step.get("selector_state", "attached")),
                     )
                     if "values" in step:
                         values = step["values"]
