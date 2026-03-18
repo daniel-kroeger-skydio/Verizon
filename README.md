@@ -175,6 +175,9 @@ It then clicks **Continue** on that page (ignoring duplicate-warning banner
 presence) and saves `artifacts/screenshots/byod_after_review_continue.png`.
 Finally, it asserts the **Select plan / Verizon Data Plans** page is reached
 and captures `artifacts/screenshots/byod_select_plan_checkpoint.png`.
+It then selects **Business Unlimited Plus 5G Smartphone ($48.00)** via
+**Select plan**, clicks the page-level **Continue**, and saves
+`artifacts/screenshots/byod_after_plan_continue.png`.
 
 ## Example snippet
 

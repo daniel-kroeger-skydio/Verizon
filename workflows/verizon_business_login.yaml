@@ -479,3 +479,46 @@ steps:
   - action: screenshot
     path: "artifacts/screenshots/byod_select_plan_checkpoint.png"
     full_page: true
+
+  # Step 6: Select required plan and continue
+  - action: wait_for_selector
+    selector:
+      - "text=Business Unlimited Plus 5G Smartphone"
+    state: visible
+    selector_timeout_ms: 90000
+
+  - action: wait_for_selector
+    selector:
+      - "text=$48.00"
+      - "text=48.00"
+    state: visible
+    selector_timeout_ms: 90000
+
+  - action: click
+    selector:
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(normalize-space(),'Select plan')]][1]//button[contains(normalize-space(),'Select plan')][1]"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/following::button[contains(normalize-space(),'Select plan')][1]"
+    selector_timeout_ms: 20000
+
+  - action: wait_for_timeout
+    ms: 2500
+
+  - action: wait_for_selector
+    selector:
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_timeout
+    ms: 5000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_plan_continue.png"
+    full_page: true
