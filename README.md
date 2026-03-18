@@ -167,6 +167,8 @@ promo toggle checkbox off for the Month-to-Month selection path.
 If the visual toggle still appears ON, a forced fallback click is applied.
 BYOD field targeting prefers Verizon form control selectors (for example,
 `formcontrolname='deviceId'`, `simType`, and `simId`) for stability.
+ICCID entry uses both native value events and keyboard typing to better trigger
+client-side validation.
 
 ## Example snippet
 

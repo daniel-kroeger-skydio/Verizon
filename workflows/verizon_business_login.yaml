@@ -330,6 +330,26 @@ steps:
     selector_state: visible
     dispatch_events: true
 
+  # Also type via keyboard events to satisfy client-side directives.
+  - action: press
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    key: "ControlOrMeta+A"
+    selector_timeout_ms: 5000
+    selector_state: visible
+
+  - action: type
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    text: "{{ byod_sim_iccid }}"
+    selector_timeout_ms: 12000
+    selector_state: visible
+    delay_ms: 20
+
   - action: extract_attr
     selector:
       - "input[formcontrolname='simId']:visible"
@@ -353,6 +373,17 @@ steps:
 
   - action: wait_for_timeout
     ms: 1500
+
+  - action: extract_attr
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    attr: "value"
+    save_as: "byod_sim_iccid_ui_value_after_blur"
+    selector_state: visible
+    selector_timeout_ms: 3000
+    continue_on_error: true
 
   - action: screenshot
     path: "artifacts/screenshots/byod_before_confirm.png"
