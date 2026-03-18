@@ -274,7 +274,7 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
                     )
-                    page.check(selector)
+                    page.check(selector, force=bool(step.get("force", False)))
                 elif action == "uncheck":
                     selector = resolve_selector(
                         page,
@@ -282,7 +282,26 @@ def run_workflow(workflow_path: Path, headed_override: bool = False) -> None:
                         action=action,
                         selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
                     )
-                    page.uncheck(selector)
+                    page.uncheck(selector, force=bool(step.get("force", False)))
+                elif action == "set_checkbox":
+                    selector = resolve_selector(
+                        page,
+                        require(step, "selector"),
+                        action=action,
+                        selector_timeout_ms=int(step.get("selector_timeout_ms", 2000)),
+                    )
+                    checked = bool(require(step, "checked"))
+                    page.locator(selector).first.evaluate(
+                        """(el, shouldCheck) => {
+                            if (!(el instanceof HTMLInputElement) || el.type !== 'checkbox') {
+                                throw new Error('set_checkbox target must be an <input type=\"checkbox\">');
+                            }
+                            el.checked = shouldCheck;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                        }""",
+                        checked,
+                    )
                 elif action == "wait_for_selector":
                     state = step.get("state", "visible")
                     selector = resolve_selector(

@@ -240,6 +240,7 @@ steps:
   # Dismiss cookie banner if present to avoid overlay side effects.
   - action: click
     selector:
+      - "#transcend-consent-manager button:has-text('Close')"
       - "button:has-text('Close')"
     selector_timeout_ms: 3000
     continue_on_error: true
@@ -252,11 +253,17 @@ steps:
     selector_timeout_ms: 8000
 
   # Ensure promotional toggle is off for Month-to-Month path.
-  - action: uncheck
+  - action: set_checkbox
     selector:
       - "#toggleCheckBox"
+    checked: false
     selector_timeout_ms: 2000
-    continue_on_error: true
+
+  - action: wait_for_selector
+    selector:
+      - "#toggleCheckBox:not(:checked)"
+    state: attached
+    selector_timeout_ms: 5000
 
   - action: fill
     selector:
