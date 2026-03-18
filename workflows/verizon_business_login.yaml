@@ -80,6 +80,73 @@ steps:
     timeout_ms: 20000
     continue_on_error: true
 
+  # Recovery branch: Verizon occasionally renders an orange error banner page
+  # without following the expected URL transitions.
+  - action: extract_text
+    selector:
+      - "text=Sorry we are not able to process your request at this time."
+    save_as: "login_error_banner"
+    selector_timeout_ms: 2500
+    optional: true
+    default: ""
+
+  - action: click
+    selector:
+      - "text=Back to Login Page."
+      - "text=Back to Login Page"
+    only_if_variable_set: "login_error_banner"
+    selector_timeout_ms: 5000
+
+  - action: wait_for_selector
+    selector:
+      - "#pwdUserID"
+      - "input[name='pwd_userid']"
+    state: visible
+    selector_timeout_ms: 30000
+    only_if_variable_set: "login_error_banner"
+
+  - action: fill
+    selector:
+      - "#pwdUserID"
+      - "input[name='pwd_userid']"
+    value: "{{ username }}"
+    selector_timeout_ms: 6000
+    only_if_variable_set: "login_error_banner"
+
+  - action: click
+    selector:
+      - "#submitUserID"
+      - "button[name='submitUserID']"
+      - "button[type='submit']"
+      - "button:has-text('Continue')"
+    selector_timeout_ms: 6000
+    only_if_variable_set: "login_error_banner"
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery|options)(?:\\?|$)"
+    timeout_ms: 30000
+    continue_on_error: true
+    only_if_variable_set: "login_error_banner"
+
+  - action: click
+    selector:
+      - "a:has-text('Password')"
+      - "text=Password"
+      - ".pwdless_option_text:has-text('Password')"
+    only_if_variable_set: "login_error_banner"
+    only_if_selector:
+      - "text=How do you want to log in?"
+      - "a:has-text('Password')"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 5000
+    continue_on_error: true
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery)(?:\\?|$)"
+    timeout_ms: 20000
+    continue_on_error: true
+    only_if_variable_set: "login_error_banner"
+
   # Step 2: password page (only when password field is present)
   - action: fill
     selector:

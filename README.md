@@ -151,6 +151,10 @@ The Verizon workflow is currently configured to submit:
 - SIM mode: **I have a physical SIM (pSIM) to activate**
 - contract term: **Month to Month**
 
+It also includes a recovery branch for Verizon's occasional orange error page
+("Sorry we are not able to process your request at this time.") by clicking
+"Back to Login Page" and retrying the login transition.
+
 The only per-run BYOD variable is **SIM ICCID**:
 
 - set `BYOD_SIM_ICCID` in env, or
