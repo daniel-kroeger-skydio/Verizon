@@ -173,6 +173,8 @@ After Confirm, the workflow validates navigation to **Review your devices** and
 saves `artifacts/screenshots/byod_review_devices.png`.
 It then clicks **Continue** on that page (ignoring duplicate-warning banner
 presence) and saves `artifacts/screenshots/byod_after_review_continue.png`.
+Finally, it asserts the **Select plan / Verizon Data Plans** page is reached
+and captures `artifacts/screenshots/byod_select_plan_checkpoint.png`.
 
 ## Example snippet
 

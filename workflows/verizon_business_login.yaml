@@ -457,3 +457,25 @@ steps:
   - action: screenshot
     path: "artifacts/screenshots/byod_after_review_continue.png"
     full_page: true
+
+  # Success assertion: verify we reached Verizon Data Plans / Select plan page.
+  - action: wait_for_selector
+    selector:
+      - "text=Select plan"
+      - "text=Select a wireless plan"
+      - "text=Verizon Data Plans"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: extract_text
+    selector:
+      - "text=Select plan"
+      - "text=Select a wireless plan"
+    save_as: "byod_next_page_checkpoint"
+    optional: true
+    default: "Select plan page reached"
+    selector_timeout_ms: 2000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_select_plan_checkpoint.png"
+    full_page: true
