@@ -643,10 +643,11 @@ steps:
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
     only_if_selector:
-      - "text=Device protection"
-      - "text=Protect your device"
-      - "text=Protection for your device"
-      - "text=Device Protection"
+      - "button:has-text('No thanks')"
+      - "button:has-text('No Thanks')"
+      - "button:has-text('No, thanks')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
     only_if_selector_timeout_ms: 2500
     selector_timeout_ms: 8000
     continue_on_error: true
