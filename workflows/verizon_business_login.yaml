@@ -563,25 +563,28 @@ steps:
 
   - action: wait_for_selector
     selector:
-      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select')]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
-      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
-      - "button:has-text('Select'):not(.disabled):not([disabled]):not([aria-disabled='true'])"
-      - "button:has-text('SELECT'):not(.disabled):not([disabled]):not([aria-disabled='true'])"
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select')]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')]"
+      - "button:has-text('Select'):not([disabled]):not([aria-disabled='true'])"
+      - "button:has-text('SELECT'):not([disabled]):not([aria-disabled='true'])"
     state: visible
-    selector_timeout_ms: 30000
+    selector_timeout_ms: 90000
 
   - action: click
     selector:
-      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))][1]"
-      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/following::button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))][1]"
-      - "xpath=(//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))])[1]"
-      - "button:has-text('Select'):not(.disabled):not([disabled]):not([aria-disabled='true'])"
-      - "button:has-text('SELECT'):not(.disabled):not([disabled]):not([aria-disabled='true'])"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')][1]"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/following::button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')][1]"
+      - "xpath=(//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')])[1]"
+      - "button:has-text('Select'):not([disabled]):not([aria-disabled='true'])"
+      - "button:has-text('SELECT'):not([disabled]):not([aria-disabled='true'])"
     only_if_not_selector:
       - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
       - "button:has-text('Continue'):not([disabled])"
     only_if_not_selector_timeout_ms: 1500
     selector_timeout_ms: 20000
+    continue_on_error: true
     force: true
 
   - action: wait_for_timeout
