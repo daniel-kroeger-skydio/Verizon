@@ -534,11 +534,6 @@ steps:
     full_page: true
 
   # Success assertion: verify we reached Verizon Data Plans / Select plan page.
-  - action: wait_for_url
-    regex: "^https://mb\\.verizonwireless\\.com/mbt/secure/index\\?.*#/(nso-landing/dataplans|nso-landing/plan|nso-landing/plans)(?:$|/.*)$"
-    timeout_ms: 60000
-    continue_on_error: true
-
   - action: wait_for_selector
     selector:
       - "text=Select plan"
@@ -854,36 +849,108 @@ steps:
     state: visible
     selector_timeout_ms: 60000
 
+  # Some variants require a secondary "Add new user" action before fields render.
+  - action: click
+    selector:
+      - "button:has-text('Add new user')"
+      - "button:has-text('Add New User')"
+      - "text=Add new user"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add new user')]"
+    only_if_not_selector:
+      - "input[formcontrolname*='first' i]"
+      - "input[name*='first' i]"
+      - "input[placeholder*='First' i]"
+      - "input[id*='first' i]"
+      - "input[aria-label*='First' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    only_if_not_selector_timeout_ms: 1200
+    only_if_selector:
+      - "button:has-text('Add new user')"
+      - "button:has-text('Add New User')"
+      - "text=Add new user"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 7000
+    continue_on_error: true
+
+  - action: wait_for_selector
+    selector:
+      - "input[formcontrolname*='first' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[placeholder*='First' i]:visible"
+      - "input[id*='first' i]:visible"
+      - "input[aria-label*='First' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+      - "button:has-text('Save'):not([disabled])"
+      - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+    state: visible
+    selector_timeout_ms: 45000
+    continue_on_error: true
+
   - action: set_input_value
     selector:
       - "input[formcontrolname*='first' i]:visible"
       - "input[name*='first' i]:visible"
+      - "input[placeholder*='First' i]:visible"
+      - "input[id*='first' i]:visible"
+      - "input[aria-label*='First' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
     value: "{{ byod_user_first_name }}"
+    only_if_selector:
+      - "input[formcontrolname*='first' i]"
+      - "input[name*='first' i]"
+      - "input[placeholder*='First' i]"
+      - "input[id*='first' i]"
+      - "input[aria-label*='First' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 8000
     selector_state: visible
     dispatch_events: true
+    continue_on_error: true
 
   - action: set_input_value
     selector:
       - "input[formcontrolname*='last' i]:visible"
       - "input[name*='last' i]:visible"
+      - "input[placeholder*='Last' i]:visible"
+      - "input[id*='last' i]:visible"
+      - "input[aria-label*='Last' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
     value: "{{ byod_user_last_name }}"
+    only_if_selector:
+      - "input[formcontrolname*='last' i]"
+      - "input[name*='last' i]"
+      - "input[placeholder*='Last' i]"
+      - "input[id*='last' i]"
+      - "input[aria-label*='Last' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 8000
     selector_state: visible
     dispatch_events: true
+    continue_on_error: true
 
   - action: set_input_value
     selector:
       - "input[type='email']:visible"
       - "input[formcontrolname*='email' i]:visible"
       - "input[name*='email' i]:visible"
+      - "input[id*='email' i]:visible"
+      - "input[aria-label*='Email' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
     value: "{{ byod_user_email }}"
+    only_if_selector:
+      - "input[type='email']"
+      - "input[formcontrolname*='email' i]"
+      - "input[name*='email' i]"
+      - "input[id*='email' i]"
+      - "input[aria-label*='Email' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 8000
     selector_state: visible
     dispatch_events: true
+    continue_on_error: true
 
   - action: set_input_value
     selector:
@@ -891,11 +958,21 @@ steps:
       - "input[name*='address1' i]:visible"
       - "input[name*='address' i]:visible"
       - "input[id*='address' i]:visible"
+      - "input[aria-label*='Address' i]:visible"
       - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
     value: "{{ byod_user_address1 }}"
+    only_if_selector:
+      - "input[formcontrolname*='address' i]"
+      - "input[name*='address1' i]"
+      - "input[name*='address' i]"
+      - "input[id*='address' i]"
+      - "input[aria-label*='Address' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
     selector_timeout_ms: 12000
     selector_state: visible
     dispatch_events: true
+    continue_on_error: true
 
   # Try to accept address autocomplete when a suggestion list is shown.
   - action: click
