@@ -18,6 +18,13 @@ variables:
   byod_device_imei: "358339770214328"
   byod_sim_iccid: "${BYOD_SIM_ICCID}"
   byod_zip_code: "94402"
+  byod_user_first_name: "Daniel"
+  byod_user_last_name: "Kroeger"
+  byod_user_email: "daniel.kroeger@skydio.com"
+  byod_user_address1: "3000 Clearview Way"
+  byod_user_city: "San Mateo"
+  byod_user_state: "CA"
+  byod_user_zip: "94402"
 
 steps:
   - action: goto
@@ -821,4 +828,165 @@ steps:
 
   - action: screenshot
     path: "artifacts/screenshots/byod_after_add_user_information_click.png"
+    full_page: true
+
+  # Step 10: Add user information to selected device.
+  - action: wait_for_selector
+    selector:
+      - "text=Add user information to your selected device"
+      - "text=Add user information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+      - "text=Address"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='first' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    value: "{{ byod_user_first_name }}"
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='last' i]:visible"
+      - "input[name*='last' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
+    value: "{{ byod_user_last_name }}"
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+
+  - action: set_input_value
+    selector:
+      - "input[type='email']:visible"
+      - "input[formcontrolname*='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
+    value: "{{ byod_user_email }}"
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='address' i]:visible"
+      - "input[name*='address1' i]:visible"
+      - "input[name*='address' i]:visible"
+      - "input[id*='address' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    value: "{{ byod_user_address1 }}"
+    selector_timeout_ms: 12000
+    selector_state: visible
+    dispatch_events: true
+
+  # Try to accept address autocomplete when a suggestion list is shown.
+  - action: click
+    selector:
+      - "xpath=(//*[@role='option'][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "xpath=(//li[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "xpath=(//*[contains(@class,'suggest')][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "text=3000 Clearview Way"
+    only_if_selector:
+      - "xpath=(//*[@role='option'][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "xpath=(//li[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "text=3000 Clearview Way"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 6000
+    continue_on_error: true
+
+  - action: press
+    selector:
+      - "input[formcontrolname*='address' i]:visible"
+      - "input[name*='address1' i]:visible"
+      - "input[name*='address' i]:visible"
+      - "input[id*='address' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    key: "Tab"
+    selector_timeout_ms: 6000
+    selector_state: visible
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 2000
+
+  # Fallback: set city/state/zip directly when address normalization does not auto-populate.
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='city' i]:visible"
+      - "input[name*='city' i]:visible"
+      - "input[id*='city' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'city')]/following::input[1]"
+    value: "{{ byod_user_city }}"
+    selector_timeout_ms: 7000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: select
+    selector:
+      - "select[formcontrolname*='state' i]:visible"
+      - "select[name*='state' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::select[1]"
+    value: "{{ byod_user_state }}"
+    selector_timeout_ms: 7000
+    selector_state: visible
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='state' i]:visible"
+      - "input[name*='state' i]:visible"
+      - "input[id*='state' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::input[1]"
+    value: "{{ byod_user_state }}"
+    selector_timeout_ms: 7000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='zip' i]:visible"
+      - "input[name*='zip' i]:visible"
+      - "input[id*='zip' i]:visible"
+      - "input[aria-label*='Zip' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip')]/following::input[1]"
+    value: "{{ byod_user_zip }}"
+    selector_timeout_ms: 7000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 1200
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_user_info_before_save.png"
+    full_page: true
+
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Save'):not([disabled])"
+      - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: click
+    selector:
+      - "button:has-text('Save'):not([disabled])"
+      - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+    selector_timeout_ms: 12000
+    force: true
+
+  - action: wait_for_timeout
+    ms: 4000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_user_info_save.png"
     full_page: true
