@@ -793,6 +793,7 @@ steps:
       - "button:has-text('Assign Number'):not([disabled])"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign number') and not(@disabled) and not(@aria-disabled='true')]"
     selector_timeout_ms: 12000
+    selector_state: visible
     force: true
 
   - action: wait_for_timeout
@@ -818,6 +819,36 @@ steps:
   - action: wait_for_timeout
     ms: 3500
 
+  # Retry once if the click did not transition to user-info flow.
+  - action: click
+    selector:
+      - "button:has-text('Add user information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    only_if_not_selector:
+      - "text=Add user information to your selected device"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[autocomplete='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+    only_if_not_selector_timeout_ms: 1200
+    only_if_selector:
+      - "button:has-text('Add user information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    force: true
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 2000
+
   - action: wait_for_selector
     selector:
       - "text=Add user information to your selected device"
@@ -838,7 +869,7 @@ steps:
       - "button:has-text('Save and continue'):not([disabled])"
       - "button:has-text('Save & continue'):not([disabled])"
     state: visible
-    selector_timeout_ms: 45000
+    selector_timeout_ms: 30000
     continue_on_error: true
 
   - action: screenshot
