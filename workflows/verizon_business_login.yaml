@@ -812,6 +812,7 @@ steps:
       - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
       - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
     selector_timeout_ms: 12000
+    selector_state: visible
     force: true
 
   - action: wait_for_timeout
@@ -820,16 +821,25 @@ steps:
   - action: wait_for_selector
     selector:
       - "text=Add user information to your selected device"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+      - "text=Address"
       - "input[autocomplete='given-name' i]:visible"
       - "input[name*='first' i]:visible"
       - "input[autocomplete='email' i]:visible"
       - "input[name*='email' i]:visible"
       - "input[autocomplete='address-line1' i]:visible"
+      - "button:has-text('Add new user')"
+      - "button:has-text('Create new user')"
       - "button:has-text('Save'):not([disabled])"
       - "button:has-text('Save and continue'):not([disabled])"
       - "button:has-text('Save & continue'):not([disabled])"
     state: visible
     selector_timeout_ms: 45000
+    continue_on_error: true
 
   - action: screenshot
     path: "artifacts/screenshots/byod_after_add_user_information_click.png"
@@ -839,6 +849,15 @@ steps:
   - action: wait_for_selector
     selector:
       - "text=Add user information to your selected device"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+      - "text=Address"
+      - "button:has-text('Add new user')"
+      - "button:has-text('Add a user')"
+      - "button:has-text('Create new user')"
       - "input[autocomplete='given-name' i]:visible"
       - "input[name*='first' i]:visible"
       - "input[autocomplete='email' i]:visible"
