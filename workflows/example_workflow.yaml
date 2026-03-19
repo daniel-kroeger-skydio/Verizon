@@ -1,0 +1,43 @@
+name: "multi-site-workflow"
+
+settings:
+  headless: true
+  timeout_ms: 15000
+  slow_mo_ms: 0
+  screenshot_dir: "artifacts/screenshots"
+
+variables:
+  # These values can come from environment variables.
+  # Export APP_USERNAME and APP_PASSWORD before running.
+  username: "${APP_USERNAME}"
+  password: "${APP_PASSWORD}"
+  search_term: "workflow automation"
+
+steps:
+  # Site 1: log in
+  - action: goto
+    url: "https://example.com/login"
+  - action: fill
+    selector: "input[name='username']"
+    value: "{{ username }}"
+  - action: fill
+    selector: "input[name='password']"
+    value: "{{ password }}"
+  - action: click
+    selector: "button[type='submit']"
+  - action: wait_for_selector
+    selector: "#dashboard"
+
+  # Site 2: perform an action
+  - action: goto
+    url: "https://duckduckgo.com"
+  - action: fill
+    selector: "input[name='q']"
+    value: "{{ search_term }}"
+  - action: press
+    selector: "input[name='q']"
+    key: "Enter"
+  - action: wait_for_selector
+    selector: "#links"
+  - action: screenshot
+    path: "artifacts/screenshots/search_results.png"

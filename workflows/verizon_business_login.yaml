@@ -1,0 +1,1333 @@
+name: "verizon-business-login"
+
+settings:
+  headless: false
+  timeout_ms: 30000
+  slow_mo_ms: 75
+  screenshot_dir: "artifacts/screenshots"
+
+variables:
+  # Set these in your shell before running:
+  # export VZW_BUSINESS_USERNAME="..."
+  # export VZW_BUSINESS_PASSWORD="..."
+  # export VZW_BUSINESS_OTP="123456"
+  username: "${VZW_BUSINESS_USERNAME}"
+  password: "${VZW_BUSINESS_PASSWORD}"
+  otp_code: "${VZW_BUSINESS_OTP}"
+  byod_url: "https://mb.verizonwireless.com/mbt/secure/index?appName=comm&transType=NSO&navtrk=globalnav:shop:bringyourowndevice#/nso-landing/devicevalidation/mobile-evolution"
+  byod_device_imei: "358339770214328"
+  byod_sim_iccid: "${BYOD_SIM_ICCID}"
+  byod_zip_code: "94402"
+  byod_user_first_name: "Daniel"
+  byod_user_last_name: "Kroeger"
+  byod_user_email: "daniel.kroeger@skydio.com"
+  byod_user_address1: "3000 Clearview Way"
+  byod_user_city: "San Mateo"
+  byod_user_state: "CA"
+  byod_user_zip: "94402"
+
+steps:
+  - action: goto
+    url: "https://mblogin.verizonwireless.com/account/business/login/unifiedlogin"
+
+  # Step 1: username page
+  - action: fill
+    selector:
+      - "#pwdUserID"
+      - "input[name='pwd_userid']"
+    value: "{{ username }}"
+    selector_timeout_ms: 4000
+
+  - action: click
+    selector:
+      - "#submitUserID"
+      - "button[name='submitUserID']"
+      - "button[type='submit']"
+      - "button:has-text('Continue')"
+    selector_timeout_ms: 4000
+
+  # Wait for username submit to move to the next auth stage.
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery|options)(?:\\?|$)"
+    timeout_ms: 30000
+    continue_on_error: true
+
+  # Retry submit once if still on username screen.
+  - action: click
+    selector:
+      - "#submitUserID"
+      - "button[name='submitUserID']"
+      - "button:has-text('Continue')"
+    only_if_selector:
+      - "#submitUserID"
+      - "input[name='pwd_userid']"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 3000
+    continue_on_error: true
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery|options)(?:\\?|$)"
+    timeout_ms: 20000
+    continue_on_error: true
+
+  # Some accounts are routed to an options page first. Choose Password branch.
+  - action: click
+    selector:
+      - "a:has-text('Password')"
+      - "text=Password"
+      - ".pwdless_option_text:has-text('Password')"
+    only_if_selector:
+      - "text=How do you want to log in?"
+      - "a:has-text('Password')"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 5000
+    continue_on_error: true
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery)(?:\\?|$)"
+    timeout_ms: 20000
+    continue_on_error: true
+
+  # Recovery branch: Verizon occasionally renders an orange error banner page
+  # without following the expected URL transitions.
+  - action: extract_text
+    selector:
+      - "text=Sorry we are not able to process your request at this time."
+    save_as: "login_error_banner"
+    selector_timeout_ms: 2500
+    optional: true
+    default: ""
+
+  - action: click
+    selector:
+      - "text=Back to Login Page."
+      - "text=Back to Login Page"
+    only_if_variable_set: "login_error_banner"
+    selector_timeout_ms: 5000
+
+  - action: wait_for_selector
+    selector:
+      - "#pwdUserID"
+      - "input[name='pwd_userid']"
+    state: visible
+    selector_timeout_ms: 30000
+    only_if_variable_set: "login_error_banner"
+
+  - action: fill
+    selector:
+      - "#pwdUserID"
+      - "input[name='pwd_userid']"
+    value: "{{ username }}"
+    selector_timeout_ms: 6000
+    only_if_variable_set: "login_error_banner"
+
+  - action: click
+    selector:
+      - "#submitUserID"
+      - "button[name='submitUserID']"
+      - "button[type='submit']"
+      - "button:has-text('Continue')"
+    selector_timeout_ms: 6000
+    only_if_variable_set: "login_error_banner"
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery|options)(?:\\?|$)"
+    timeout_ms: 30000
+    continue_on_error: true
+    only_if_variable_set: "login_error_banner"
+
+  - action: click
+    selector:
+      - "a:has-text('Password')"
+      - "text=Password"
+      - ".pwdless_option_text:has-text('Password')"
+    only_if_variable_set: "login_error_banner"
+    only_if_selector:
+      - "text=How do you want to log in?"
+      - "a:has-text('Password')"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 5000
+    continue_on_error: true
+
+  - action: wait_for_url
+    regex: "^https://mblogin\\.verizonwireless\\.com/account/business/login/(password|otpdelivery)(?:\\?|$)"
+    timeout_ms: 20000
+    continue_on_error: true
+    only_if_variable_set: "login_error_banner"
+
+  # Step 2: password page (only when password field is present)
+  - action: fill
+    selector:
+      - "input[type='password']"
+      - "input[autocomplete='current-password']"
+    value: "{{ password }}"
+    only_if_selector:
+      - "input[type='password']"
+      - "input[autocomplete='current-password']"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 8000
+    continue_on_error: true
+
+  - action: click
+    selector:
+      - "button[type='submit']"
+      - "button:has-text('Sign in')"
+      - "button:has-text('Log in')"
+      - "input[type='submit']"
+    only_if_selector:
+      - "input[type='password']"
+      - "input[autocomplete='current-password']"
+    only_if_selector_timeout_ms: 1000
+    selector_timeout_ms: 8000
+    continue_on_error: true
+
+  # Step 3: OTP challenge (if prompted)
+  # Optional delivery-method step for flows that show "Select a verification method".
+  - action: click
+    selector:
+      - "a:has-text('Text')"
+      - ".pwdless_option_text:has-text('Text')"
+      - "button:has-text('Text')"
+      - "[role='button']:has-text('Text')"
+      - "label:has-text('Text')"
+    selector_timeout_ms: 6000
+    continue_on_error: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  # Optional trigger to send OTP after method selection.
+  - action: click
+    selector:
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Send code'):not([disabled])"
+      - "button:has-text('Verify'):not([disabled])"
+      - "button[type='submit']:not([disabled])"
+    selector_timeout_ms: 3000
+    continue_on_error: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  - action: wait_for_selector
+    selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    state: visible
+    selector_timeout_ms: 45000
+    continue_on_error: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  # Prompt only when OTP entry field is actually present.
+  - action: prompt_variable
+    name: "otp_code"
+    prompt: "Enter current Verizon OTP code: "
+    secret: true
+    if_empty_only: true
+    required: false
+    continue_on_error: true
+    only_if_selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    only_if_selector_timeout_ms: 1500
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  # Non-interactive fallback for cloud runs:
+  # when OTP input appears, wait for this file to be populated with the current OTP.
+  # Example: mkdir -p .runtime && printf '%s' '123456' > .runtime/verizon_otp.txt
+  - action: set_variable_from_file
+    name: "otp_code"
+    path: ".runtime/verizon_otp.txt"
+    if_empty_only: true
+    only_if_selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    only_if_selector_timeout_ms: 2000
+    timeout_ms: 600000
+    poll_interval_ms: 1000
+    delete_after_read: true
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  - action: fill
+    selector:
+      - "input[autocomplete='one-time-code']"
+      - "input[name*='otp' i]"
+      - "input[id*='otp' i]"
+      - "input[name*='code' i]"
+      - "input[id*='code' i]"
+      - "input[inputmode='numeric']"
+      - "input[type='tel']"
+    value: "{{ otp_code }}"
+    selector_timeout_ms: 8000
+    continue_on_error: true
+    only_if_variable_set: "otp_code"
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  - action: click
+    selector:
+      - "button:has-text('Verify')"
+      - "button:has-text('Continue')"
+      - "button:has-text('Submit')"
+      - "button:has-text('Log in')"
+      - "button[type='submit']"
+      - "input[type='submit']"
+    selector_timeout_ms: 8000
+    continue_on_error: true
+    only_if_variable_set: "otp_code"
+    only_if_url_regex: "/account/business/login/otpdelivery"
+
+  # Wait and capture post-login state
+  - action: wait_for_timeout
+    ms: 12000
+
+  - action: screenshot
+    path: "artifacts/screenshots/verizon_after_login.png"
+    full_page: true
+
+  # Step 4: navigate to BYOD and verify page load
+  - action: goto
+    url: "{{ byod_url }}"
+    wait_until: "domcontentloaded"
+
+  - action: wait_for_url
+    regex: "^https://mb\\.verizonwireless\\.com/mbt/secure/index\\?.*#/nso-landing/devicevalidation/mobile-evolution$"
+    timeout_ms: 90000
+
+  - action: wait_for_selector
+    selector:
+      - "text=Tell us about your device."
+      - "text=Device ID (IMEI)"
+      - "text=Bring Your Own Device"
+    state: attached
+    selector_timeout_ms: 90000
+
+  # Dismiss cookie banner if present to avoid overlay side effects.
+  - action: click
+    selector:
+      - "#transcend-consent-manager button:has-text('Close')"
+      - "button:has-text('Close')"
+    selector_timeout_ms: 3000
+    continue_on_error: true
+
+  # Step 5: fill BYOD form fields
+  - action: click
+    selector:
+      - "div.radio-box-item:has-text('I want a new phone number')"
+      - "text=I want a new phone number"
+    selector_timeout_ms: 8000
+
+  # Ensure promotional toggle is off for Month-to-Month path.
+  - action: set_checkbox
+    selector:
+      - "#toggleCheckBox"
+    checked: false
+    selector_timeout_ms: 2000
+
+  # Fallback: force-click visual switch if still shown as ON.
+  - action: click
+    selector:
+      - ".ToggleSwitchSlider.SwitchOn"
+    force: true
+    selector_timeout_ms: 2000
+    continue_on_error: true
+    only_if_selector:
+      - ".ToggleSwitchSlider.SwitchOn"
+    only_if_selector_timeout_ms: 1000
+
+  - action: wait_for_selector
+    selector:
+      - "#toggleCheckBox:not(:checked)"
+      - ".ToggleSwitchSlider.SwitchOff"
+    state: attached
+    selector_timeout_ms: 5000
+
+  - action: fill
+    selector:
+      - "input[formcontrolname='deviceId']:visible"
+      - "xpath=//label[normalize-space()='Device ID (IMEI)']/following::input[@type='text' and not(@disabled)][1]"
+      - "input.Form-input.width:visible"
+    value: "{{ byod_device_imei }}"
+    selector_timeout_ms: 12000
+    selector_state: visible
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: select
+    selector:
+      - "select[formcontrolname='simType']:visible"
+      - "xpath=//label[normalize-space()='SIM']/following::select[not(@disabled)][1]"
+      - "select[aria-label='Select-Option']:visible"
+    value: "haveOwnPSim"
+    selector_timeout_ms: 12000
+    selector_state: visible
+
+  - action: wait_for_selector
+    selector:
+      - "text=SIM number"
+      - "xpath=//label[normalize-space()='SIM number']"
+    state: visible
+    selector_timeout_ms: 12000
+
+  # BYOD_SIM_ICCID is the only per-run variable. Prompt when not pre-set in env.
+  - action: prompt_variable
+    name: "byod_sim_iccid"
+    prompt: "Enter BYOD SIM ICCID (20 digits): "
+    secret: false
+    if_empty_only: true
+    required: true
+    only_if_url_regex: "/nso-landing/devicevalidation/mobile-evolution"
+
+  - action: normalize_variable
+    name: "byod_sim_iccid"
+    mode: "digits_only"
+    min_length: 20
+    max_length: 20
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    value: "{{ byod_sim_iccid }}"
+    selector_timeout_ms: 12000
+    selector_state: visible
+    dispatch_events: true
+
+  # Also type via keyboard events to satisfy client-side directives.
+  - action: press
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    key: "ControlOrMeta+A"
+    selector_timeout_ms: 5000
+    selector_state: visible
+
+  - action: type
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    text: "{{ byod_sim_iccid }}"
+    selector_timeout_ms: 12000
+    selector_state: visible
+    delay_ms: 20
+
+  - action: extract_attr
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    attr: "value"
+    save_as: "byod_sim_iccid_ui_value"
+    selector_state: visible
+    selector_timeout_ms: 3000
+    continue_on_error: true
+
+  # Trigger validation by blurring SIM number field.
+  - action: press
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    key: "Tab"
+    selector_timeout_ms: 8000
+    selector_state: visible
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: extract_attr
+    selector:
+      - "input[formcontrolname='simId']:visible"
+      - "xpath=//label[normalize-space()='SIM number']/following::input[@type='text' and not(@disabled)][1]"
+      - "input[aria-label='Quantity']:visible"
+    attr: "value"
+    save_as: "byod_sim_iccid_ui_value_after_blur"
+    selector_state: visible
+    selector_timeout_ms: 3000
+    continue_on_error: true
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_before_confirm.png"
+    full_page: true
+
+  # Helpful diagnostics if button doesn't enable.
+  - action: extract_text
+    selector:
+      - "text=Please enter valid SIM number."
+      - "text=SIM number is required."
+      - "text=Please enter valid Device ID."
+      - "text=Device Id is required."
+    save_as: "byod_validation_hint"
+    selector_timeout_ms: 1500
+    optional: true
+    default: ""
+
+  - action: select
+    selector:
+      - "select[name='contract0']:visible"
+      - "xpath=//label[normalize-space()='Contract term']/following::select[not(@disabled)][1]"
+    value: "0"
+    selector_timeout_ms: 12000
+    selector_state: visible
+
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Confirm devices'):not([disabled])"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: click
+    selector:
+      - "button:has-text('Confirm devices'):not([disabled])"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_selector
+    selector:
+      - "text=Review your devices."
+      - "h1:has-text('Review your devices.')"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: extract_text
+    selector:
+      - "text=already in the cart and hence cannot be added again."
+    save_as: "byod_review_warning"
+    selector_timeout_ms: 2000
+    optional: true
+    default: ""
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_review_devices.png"
+    full_page: true
+
+  # Continue from review page even if duplicate-warning banner is present.
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Continue')"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "button:has-text('Continue')"
+    selector_timeout_ms: 12000
+
+  - action: wait_for_timeout
+    ms: 5000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_review_continue.png"
+    full_page: true
+
+  # Success assertion: verify we reached Verizon Data Plans / Select plan page.
+  - action: wait_for_selector
+    selector:
+      - "text=Select plan"
+      - "text=Select a wireless plan"
+      - "text=Verizon Data Plans"
+      - "text=Business Unlimited Plus 5G Smartphone"
+      - "text=Unlimited Plus 5G Smartphone"
+      - "button:has-text('Select plan')"
+      - "button:has-text('Select')"
+    state: visible
+    selector_timeout_ms: 60000
+    continue_on_error: true
+
+  - action: extract_text
+    selector:
+      - "text=Select plan"
+      - "text=Select a wireless plan"
+      - "text=Business Unlimited Plus 5G Smartphone"
+      - "h1"
+    save_as: "byod_next_page_checkpoint"
+    optional: true
+    default: "Select plan page reached"
+    selector_timeout_ms: 2000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_select_plan_checkpoint.png"
+    full_page: true
+
+  # Step 6: Select required plan and continue
+  - action: wait_for_selector
+    selector:
+      - "text=Business Unlimited Plus 5G Smartphone"
+    state: visible
+    selector_timeout_ms: 90000
+
+  - action: wait_for_selector
+    selector:
+      - "text=$48.00"
+      - "text=48.00"
+    state: visible
+    selector_timeout_ms: 90000
+
+  - action: wait_for_selector
+    selector:
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select')]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')]"
+      - "button:has-text('Select'):not([disabled]):not([aria-disabled='true'])"
+      - "button:has-text('SELECT'):not([disabled]):not([aria-disabled='true'])"
+    state: visible
+    selector_timeout_ms: 90000
+
+  - action: click
+    selector:
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/ancestor::*[.//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')]][1]//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')][1]"
+      - "xpath=(//*[contains(normalize-space(),'Business Unlimited Plus 5G Smartphone')])[1]/following::button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')][1]"
+      - "xpath=(//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'select') and not(@disabled) and not(@aria-disabled='true')])[1]"
+      - "button:has-text('Select'):not([disabled]):not([aria-disabled='true'])"
+      - "button:has-text('SELECT'):not([disabled]):not([aria-disabled='true'])"
+    only_if_not_selector:
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    only_if_not_selector_timeout_ms: 1500
+    selector_timeout_ms: 20000
+    continue_on_error: true
+    force: true
+
+  - action: wait_for_timeout
+    ms: 2500
+
+  - action: wait_for_selector
+    selector:
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "xpath=//h1[contains(normalize-space(),'Select plan')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    selector_timeout_ms: 12000
+
+  # Step 7: Destination checkpoint after Select Plan continue.
+  # Prefer URL transition away from dataplans, but don't hard-fail if Verizon keeps URL stable.
+  - action: wait_for_url
+    regex: "^https://mb\\.verizonwireless\\.com/mbt/secure/index\\?.*#/(?!nso-landing/dataplans).+$"
+    timeout_ms: 90000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 4000
+
+  - action: extract_text
+    selector:
+      - "text=Device protection"
+      - "text=Protect your device"
+      - "text=Protection for your device"
+      - "text=Add-ons"
+      - "text=Accessories"
+      - "text=Review your order"
+      - "text=Order summary"
+      - "h1"
+      - "h2"
+    save_as: "post_select_plan_destination_checkpoint"
+    optional: true
+    default: "Post-Select-Plan destination reached"
+    selector_timeout_ms: 3000
+    selector_state: visible
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_plan_destination_checkpoint.png"
+    full_page: true
+
+  # Step 8: Next-page automation (common Verizon branch: Device Protection).
+  - action: click
+    selector:
+      - "button:has-text('No thanks')"
+      - "button:has-text('No Thanks')"
+      - "button:has-text('No, thanks')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+    only_if_selector:
+      - "button:has-text('No thanks')"
+      - "button:has-text('No Thanks')"
+      - "button:has-text('No, thanks')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no thanks')]"
+    only_if_selector_timeout_ms: 2500
+    selector_timeout_ms: 8000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: click
+    selector:
+      - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'protection')]/following::button[contains(normalize-space(),'Continue') and not(@disabled)][1]"
+      - "button:has-text('Continue'):not([disabled])"
+    only_if_selector:
+      - "text=Device protection"
+      - "text=Protect your device"
+      - "text=Protection for your device"
+      - "text=Device Protection"
+    only_if_selector_timeout_ms: 2500
+    selector_timeout_ms: 10000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 4000
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_next_page_automation.png"
+    full_page: true
+
+  # Step 9: Number assignment page (Zip -> Assign number -> Add user information).
+  - action: wait_for_selector
+    selector:
+      - "text=Assign numbers"
+      - "text=Assign number"
+      - "text=Assign line"
+      - "text=Zip Code"
+      - "text=Area code and prefix"
+    state: visible
+    selector_timeout_ms: 60000
+    continue_on_error: true
+
+  - action: extract_text
+    selector:
+      - "text=Assign numbers"
+      - "text=Assign number"
+      - "text=Assign line"
+      - "text=Zip Code"
+      - "text=Area code and prefix"
+      - "h1"
+      - "h2"
+    save_as: "byod_number_assignment_checkpoint"
+    optional: true
+    default: "Number assignment page reached"
+    selector_timeout_ms: 2500
+    selector_state: visible
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_assignment_checkpoint.png"
+    full_page: true
+
+  # Keep Verizon-provided zip prefill deterministic.
+  - action: set_input_value
+    only_if_selector:
+      - "input[formcontrolname*='zip' i]"
+      - "input[name*='zip' i]"
+      - "input[id*='zip' i]"
+      - "input[aria-label*='Zip' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip code')]/following::input[1]"
+    selector:
+      - "input[formcontrolname*='zip' i]:visible"
+      - "input[name*='zip' i]:visible"
+      - "input[id*='zip' i]:visible"
+      - "input[aria-label*='Zip' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip code')]/following::input[1]"
+    value: "{{ byod_zip_code }}"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: press
+    selector:
+      - "input[formcontrolname*='zip' i]:visible"
+      - "input[name*='zip' i]:visible"
+      - "input[id*='zip' i]:visible"
+      - "input[aria-label*='Zip' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip code')]/following::input[1]"
+    only_if_selector:
+      - "input[formcontrolname*='zip' i]"
+      - "input[name*='zip' i]"
+      - "input[id*='zip' i]"
+      - "input[aria-label*='Zip' i]"
+    key: "Tab"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 5000
+    selector_state: visible
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 1500
+
+  - action: extract_attr
+    selector:
+      - "input[formcontrolname*='zip' i]:visible"
+      - "input[name*='zip' i]:visible"
+      - "input[id*='zip' i]:visible"
+      - "input[aria-label*='Zip' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip code')]/following::input[1]"
+    attr: "value"
+    save_as: "byod_assignment_zip_value"
+    selector_timeout_ms: 2000
+    selector_state: visible
+    optional: true
+    default: ""
+    continue_on_error: true
+
+  # Area code and prefix should already be selected; Assign number should be clickable.
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Assign number'):not([disabled])"
+      - "button:has-text('Assign Number'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign number') and not(@disabled) and not(@aria-disabled='true')]"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "button:has-text('Assign number'):not([disabled])"
+      - "button:has-text('Assign Number'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign number') and not(@disabled) and not(@aria-disabled='true')]"
+    selector_timeout_ms: 12000
+    selector_state: visible
+    force: true
+
+  - action: wait_for_timeout
+    ms: 2500
+
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Add user information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "button:has-text('Add user information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    selector_timeout_ms: 12000
+    selector_state: visible
+    force: true
+
+  - action: wait_for_timeout
+    ms: 3500
+
+  # Retry once if the click did not transition to user-info flow.
+  - action: click
+    selector:
+      - "button:has-text('Add user information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    only_if_not_selector:
+      - "text=Add user information to your selected device"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[autocomplete='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+    only_if_not_selector_timeout_ms: 1200
+    only_if_selector:
+      - "button:has-text('Add user information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "button:has-text('Add User Information'):not([disabled]):not([aria-disabled='true']):not(.disabled)"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add user information') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    force: true
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 2000
+
+  - action: wait_for_selector
+    selector:
+      - "text=Add user information to your selected device"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+      - "text=Address"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[autocomplete='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "button:has-text('Add new user')"
+      - "button:has-text('Create new user')"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+    state: visible
+    selector_timeout_ms: 30000
+    continue_on_error: true
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_add_user_information_click.png"
+    full_page: true
+
+  # Step 10: Add user information to selected device.
+  - action: wait_for_selector
+    selector:
+      - "text=Add user information to your selected device"
+      - "text=Who will use this device"
+      - "text=User information"
+      - "text=First name"
+      - "text=Last name"
+      - "text=Email"
+      - "text=Address"
+      - "button:has-text('Add new user')"
+      - "button:has-text('Add a user')"
+      - "button:has-text('Create new user')"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[autocomplete='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+    state: visible
+    selector_timeout_ms: 45000
+
+  # Some variants require a secondary "Add new user" action before fields render.
+  - action: click
+    selector:
+      - "button:has-text('Add new user')"
+      - "button:has-text('Add New User')"
+      - "button:has-text('Add a user')"
+      - "button:has-text('Create new user')"
+      - "button:has-text('Create User')"
+      - "text=Add new user"
+      - "text=Add a user"
+      - "text=Create new user"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'add new user')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'create new user')]"
+    only_if_not_selector:
+      - "input[formcontrolname*='first' i]"
+      - "input[name*='first' i]"
+      - "input[placeholder*='First' i]"
+      - "input[id*='first' i]"
+      - "input[aria-label*='First' i]"
+      - "input[autocomplete='given-name' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    only_if_not_selector_timeout_ms: 1200
+    only_if_selector:
+      - "button:has-text('Add new user')"
+      - "button:has-text('Add New User')"
+      - "text=Add new user"
+      - "button:has-text('Add a user')"
+      - "button:has-text('Create new user')"
+      - "text=Add a user"
+      - "text=Create new user"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 7000
+    continue_on_error: true
+
+  - action: wait_for_selector
+    selector:
+      - "input[formcontrolname*='first' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[placeholder*='First' i]:visible"
+      - "input[id*='first' i]:visible"
+      - "input[aria-label*='First' i]:visible"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='given' i]:visible"
+      - "input[id*='given' i]:visible"
+      - "input[name*='fname' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    state: visible
+    selector_timeout_ms: 45000
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='first' i]:visible"
+      - "input[name*='first' i]:visible"
+      - "input[placeholder*='First' i]:visible"
+      - "input[id*='first' i]:visible"
+      - "input[aria-label*='First' i]:visible"
+      - "input[autocomplete='given-name' i]:visible"
+      - "input[name*='given' i]:visible"
+      - "input[id*='given' i]:visible"
+      - "input[name*='fname' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    value: "{{ byod_user_first_name }}"
+    only_if_selector:
+      - "input[formcontrolname*='first' i]"
+      - "input[name*='first' i]"
+      - "input[placeholder*='First' i]"
+      - "input[id*='first' i]"
+      - "input[aria-label*='First' i]"
+      - "input[autocomplete='given-name' i]"
+      - "input[name*='given' i]"
+      - "input[id*='given' i]"
+      - "input[name*='fname' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'first name')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='last' i]:visible"
+      - "input[name*='last' i]:visible"
+      - "input[placeholder*='Last' i]:visible"
+      - "input[id*='last' i]:visible"
+      - "input[aria-label*='Last' i]:visible"
+      - "input[autocomplete='family-name' i]:visible"
+      - "input[name*='family' i]:visible"
+      - "input[id*='family' i]:visible"
+      - "input[name*='lname' i]:visible"
+      - "input[name*='surname' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
+    value: "{{ byod_user_last_name }}"
+    only_if_selector:
+      - "input[formcontrolname*='last' i]"
+      - "input[name*='last' i]"
+      - "input[placeholder*='Last' i]"
+      - "input[id*='last' i]"
+      - "input[aria-label*='Last' i]"
+      - "input[autocomplete='family-name' i]"
+      - "input[name*='family' i]"
+      - "input[id*='family' i]"
+      - "input[name*='lname' i]"
+      - "input[name*='surname' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'last name')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[type='email']:visible"
+      - "input[formcontrolname*='email' i]:visible"
+      - "input[name*='email' i]:visible"
+      - "input[id*='email' i]:visible"
+      - "input[aria-label*='Email' i]:visible"
+      - "input[autocomplete='email' i]:visible"
+      - "input[name*='mail' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
+    value: "{{ byod_user_email }}"
+    only_if_selector:
+      - "input[type='email']"
+      - "input[formcontrolname*='email' i]"
+      - "input[name*='email' i]"
+      - "input[id*='email' i]"
+      - "input[aria-label*='Email' i]"
+      - "input[autocomplete='email' i]"
+      - "input[name*='mail' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'email')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 8000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='address' i]:visible"
+      - "input[name*='address1' i]:visible"
+      - "input[name*='address' i]:visible"
+      - "input[id*='address' i]:visible"
+      - "input[aria-label*='Address' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "input[name*='street' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    value: "{{ byod_user_address1 }}"
+    only_if_selector:
+      - "input[formcontrolname*='address' i]"
+      - "input[name*='address1' i]"
+      - "input[name*='address' i]"
+      - "input[id*='address' i]"
+      - "input[aria-label*='Address' i]"
+      - "input[autocomplete='address-line1' i]"
+      - "input[name*='street' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 12000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  # Try to accept address autocomplete when a suggestion list is shown.
+  - action: click
+    selector:
+      - "xpath=(//*[@role='option'][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "xpath=(//li[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "xpath=(//*[contains(@class,'suggest')][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "text=3000 Clearview Way"
+    only_if_selector:
+      - "xpath=(//*[@role='option'][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "xpath=(//li[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'clearview')])[1]"
+      - "text=3000 Clearview Way"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 6000
+    continue_on_error: true
+
+  - action: press
+    selector:
+      - "input[formcontrolname*='address' i]:visible"
+      - "input[name*='address1' i]:visible"
+      - "input[name*='address' i]:visible"
+      - "input[id*='address' i]:visible"
+      - "input[autocomplete='address-line1' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    only_if_selector:
+      - "input[formcontrolname*='address' i]"
+      - "input[name*='address1' i]"
+      - "input[name*='address' i]"
+      - "input[id*='address' i]"
+      - "input[autocomplete='address-line1' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'address')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    key: "Tab"
+    selector_timeout_ms: 6000
+    selector_state: visible
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 2000
+
+  # Fallback: set city/state/zip directly when address normalization does not auto-populate.
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='city' i]:visible"
+      - "input[name*='city' i]:visible"
+      - "input[id*='city' i]:visible"
+      - "input[autocomplete='address-level2' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'city')]/following::input[1]"
+    value: "{{ byod_user_city }}"
+    only_if_selector:
+      - "input[formcontrolname*='city' i]"
+      - "input[name*='city' i]"
+      - "input[id*='city' i]"
+      - "input[autocomplete='address-level2' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'city')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 7000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: select
+    selector:
+      - "select[formcontrolname*='state' i]:visible"
+      - "select[name*='state' i]:visible"
+      - "select[autocomplete='address-level1' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::select[1]"
+    value: "{{ byod_user_state }}"
+    only_if_selector:
+      - "select[formcontrolname*='state' i]"
+      - "select[name*='state' i]"
+      - "select[autocomplete='address-level1' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::select[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 7000
+    selector_state: visible
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='state' i]:visible"
+      - "input[name*='state' i]:visible"
+      - "input[id*='state' i]:visible"
+      - "input[autocomplete='address-level1' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::input[1]"
+    value: "{{ byod_user_state }}"
+    only_if_selector:
+      - "input[formcontrolname*='state' i]"
+      - "input[name*='state' i]"
+      - "input[id*='state' i]"
+      - "input[autocomplete='address-level1' i]"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'state')]/following::input[1]"
+    only_if_selector_timeout_ms: 1200
+    selector_timeout_ms: 7000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: set_input_value
+    selector:
+      - "input[formcontrolname*='zip' i]:visible"
+      - "input[name*='zip' i]:visible"
+      - "input[id*='zip' i]:visible"
+      - "input[aria-label*='Zip' i]:visible"
+      - "input[autocomplete='postal-code' i]:visible"
+      - "xpath=//label[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'zip')]/following::input[1]"
+    value: "{{ byod_user_zip }}"
+    selector_timeout_ms: 7000
+    selector_state: visible
+    dispatch_events: true
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 1200
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_user_info_before_save.png"
+    full_page: true
+
+  - action: wait_for_selector
+    selector:
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "[role='button']:has-text('Save')"
+      - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    state: visible
+    selector_timeout_ms: 60000
+
+  - action: click
+    selector:
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "[role='button']:has-text('Save')"
+      - "xpath=//button[contains(normalize-space(),'Save') and not(@disabled) and not(@aria-disabled='true')]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    only_if_selector:
+      - "button:has-text('Save'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "button:has-text('Save & continue'):not([disabled])"
+      - "[role='button']:has-text('Save')"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'save') and not(@disabled)]"
+    only_if_selector_timeout_ms: 1500
+    selector_timeout_ms: 12000
+    force: true
+    continue_on_error: true
+
+  # Fallback for variants that expose Next/Continue instead of Save.
+  - action: click
+    selector:
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+    only_if_not_selector:
+      - "button:has-text('Save')"
+      - "button:has-text('Save and continue')"
+      - "button:has-text('Save & continue')"
+    only_if_not_selector_timeout_ms: 1000
+    only_if_selector:
+      - "button:has-text('Continue'):not([disabled])"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Save and continue'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled)]"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'next') and not(@disabled)]"
+    only_if_selector_timeout_ms: 1000
+    only_if_selector_state: visible
+    selector_timeout_ms: 12000
+    continue_on_error: true
+
+  - action: wait_for_timeout
+    ms: 4000
+
+  - action: extract_text
+    selector:
+      - "text=Review your order"
+      - "text=Order summary"
+      - "text=Checkout"
+      - "text=Payment"
+      - "text=Cart"
+      - "h1"
+      - "h2"
+    save_as: "byod_after_user_info_checkpoint"
+    optional: true
+    default: "Post-user-info action completed"
+    selector_timeout_ms: 2000
+    selector_state: visible
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_user_info_save.png"
+    full_page: true
+
+  # Step 11: After save, Verizon returns to assignment page with success banner.
+  - action: wait_for_selector
+    selector:
+      - "text=SubscriberInfo added successfully"
+      - "text=Subscriber info added successfully"
+      - "text=Subscriber information added successfully"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriberinfo added successfully')]"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriber info added successfully')]"
+    state: visible
+    selector_timeout_ms: 45000
+
+  - action: extract_text
+    selector:
+      - "text=SubscriberInfo added successfully"
+      - "text=Subscriber info added successfully"
+      - "text=Subscriber information added successfully"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriberinfo added successfully')]"
+      - "xpath=//*[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'subscriber info added successfully')]"
+    save_as: "byod_assignment_return_checkpoint"
+    selector_timeout_ms: 3000
+    selector_state: visible
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_assignment_return_after_save.png"
+    full_page: true
+
+  - action: wait_for_selector
+    selector:
+      - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign')]/following::button[contains(normalize-space(),'Continue') and not(@disabled) and not(@aria-disabled='true')][1]"
+      - "button:has-text('Continue'):not([disabled])"
+      - "[role='button']:has-text('Continue')"
+      - "xpath=//a[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Proceed'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    state: visible
+    selector_timeout_ms: 30000
+
+  - action: click
+    selector:
+      - "xpath=//h1[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'assign')]/following::button[contains(normalize-space(),'Continue') and not(@disabled) and not(@aria-disabled='true')][1]"
+      - "button:has-text('Continue'):not([disabled])"
+      - "[role='button']:has-text('Continue')"
+      - "xpath=//a[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+      - "button:has-text('Next'):not([disabled])"
+      - "button:has-text('Proceed'):not([disabled])"
+      - "xpath=//button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') and not(@disabled) and not(@aria-disabled='true') and not(contains(translate(@class,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'disabled'))]"
+    selector_timeout_ms: 12000
+    force: true
+
+  - action: wait_for_timeout
+    ms: 4000
+
+  - action: extract_text
+    selector:
+      - "text=Review your order"
+      - "text=Order summary"
+      - "text=Checkout"
+      - "text=Payment"
+      - "h1"
+      - "h2"
+    save_as: "byod_after_assignment_return_continue_checkpoint"
+    optional: true
+    default: "Continue clicked from assignment return page"
+    selector_timeout_ms: 2000
+    selector_state: visible
+
+  - action: screenshot
+    path: "artifacts/screenshots/byod_after_assignment_return_continue.png"
+    full_page: true
